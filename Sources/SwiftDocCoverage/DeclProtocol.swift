@@ -22,7 +22,6 @@
 //  THE SOFTWARE.
 
 import Foundation
-
 import SwiftSyntax
 
 enum AccessLevel: Int {
@@ -96,12 +95,29 @@ extension DeclProtocol {
     func location(sourceLocationConverter: SourceLocationConverter) -> SourceLocation {
         startLocation(converter: sourceLocationConverter, afterLeadingTrivia: true)
     }
+}
+
+// MARK: -
+
+extension TypealiasDeclSyntax: DeclProtocol {
+    var accessLevel: AccessLevel {
+        accessLevel(modifierList: modifiers)
+    }
     
-    var declaration: String {
-        "\(accessLevel) \(id)"
+    var id: String {
+        identifier.withoutTrivia().description
     }
 }
 
+extension AssociatedtypeDeclSyntax: DeclProtocol {
+    var accessLevel: AccessLevel {
+        accessLevel(modifierList: modifiers)
+    }
+    
+    var id: String {
+        identifier.withoutTrivia().description
+    }
+}
 
 extension ClassDeclSyntax: DeclProtocol {
     var accessLevel: AccessLevel {
@@ -109,6 +125,127 @@ extension ClassDeclSyntax: DeclProtocol {
     }
     
     var id: String {
-        withoutTrivia().withMembers(SyntaxFactory.makeBlankMemberDeclBlock()).description
+        let genericParameter = genericParameterClause?.withoutTrivia().description ?? ""
+        return "\(identifier.withoutTrivia())\(genericParameter)"
+    }
+}
+
+extension StructDeclSyntax: DeclProtocol {
+    var accessLevel: AccessLevel {
+        accessLevel(modifierList: modifiers)
+    }
+    
+    var id: String {
+        let genericParameter = genericParameterClause?.withoutTrivia().description ?? ""
+        return "\(identifier.withoutTrivia())\(genericParameter)"
+    }
+}
+
+extension ProtocolDeclSyntax: DeclProtocol {
+    var accessLevel: AccessLevel {
+        accessLevel(modifierList: modifiers)
+    }
+    
+    var id: String {
+        identifier.withoutTrivia().description
+    }
+}
+
+extension ExtensionDeclSyntax: DeclProtocol {
+    var accessLevel: AccessLevel {
+        accessLevel(modifierList: modifiers)
+    }
+    
+    var id: String {
+        extendedType.withoutTrivia().description
+    }
+}
+
+extension FunctionDeclSyntax: DeclProtocol {
+    var accessLevel: AccessLevel {
+        accessLevel(modifierList: modifiers)
+    }
+    
+    var id: String {
+        let generic = genericParameterClause?.withoutTrivia().description ?? ""
+        return "\(identifier.withoutTrivia())\(generic)\(signature.withoutTrivia())"
+    }
+}
+
+extension InitializerDeclSyntax: DeclProtocol {
+    var accessLevel: AccessLevel {
+        accessLevel(modifierList: modifiers)
+    }
+    
+    var id: String {
+        let optionalMark = optionalMark?.withoutTrivia().description ?? ""
+        let generic = genericParameterClause?.withoutTrivia().description ?? ""
+        return "\(initKeyword.withoutTrivia())\(optionalMark)\(generic)\(parameters.withoutTrivia())"
+    }
+}
+
+extension SubscriptDeclSyntax: DeclProtocol {
+    var accessLevel: AccessLevel {
+        accessLevel(modifierList: modifiers)
+    }
+    
+    var id: String {
+        let generic = genericParameterClause?.withoutTrivia().description ?? ""
+        return "\(subscriptKeyword.withoutTrivia())\(generic)\(indices.withoutTrivia()) \(result.withoutTrivia())"
+    }
+}
+
+extension VariableDeclSyntax: DeclProtocol {
+    var accessLevel: AccessLevel {
+        accessLevel(modifierList: modifiers)
+    }
+    
+    var id: String {
+        bindings.map { $0.pattern.withoutTrivia().description }.joined(separator: ",")
+    }    
+}
+
+extension EnumDeclSyntax: DeclProtocol {
+    var accessLevel: AccessLevel {
+        accessLevel(modifierList: modifiers)
+    }
+    
+    var id: String {
+        let generic = genericParameters?.withoutTrivia().description ?? ""
+        return "\(identifier.withoutTrivia().description)\(generic)"
+    }
+}
+
+extension EnumCaseDeclSyntax: DeclProtocol {
+    var accessLevel: AccessLevel {
+        accessLevel(modifierList: modifiers)
+    }
+    
+    var id: String {
+        elements.map {
+            let name = $0.identifier.withoutTrivia().description
+            let associatedValue = $0.associatedValue?.withoutTrivia().description ?? ""
+            return "\(name)\(associatedValue)"
+        }.joined(separator: ",")
+    }
+}
+
+extension OperatorDeclSyntax: DeclProtocol {
+    var accessLevel: AccessLevel {
+        accessLevel(modifierList: modifiers)
+    }
+    
+    var id: String {
+        "\(operatorKeyword.withoutTrivia()) \(identifier.withoutTrivia())"
+    }
+}
+
+extension PrecedenceGroupDeclSyntax: DeclProtocol {
+    var accessLevel: AccessLevel {
+        accessLevel(modifierList: modifiers)
+    }
+    
+    var id: String {
+        "\(precedencegroupKeyword.withoutTrivia()) \(identifier.withoutTrivia())"
     }
 }
