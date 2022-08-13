@@ -24,6 +24,19 @@
 import Foundation
 import SwiftSyntax
 
+
+struct Comment {
+    enum Kind {
+        case line
+        case block
+        case docLine
+        case docBlock
+    }
+    
+    let kind: Kind
+    let text: String
+}
+
 enum AccessLevel: Int {
     case `open`
     case `public`
@@ -51,26 +64,34 @@ extension AccessLevel : CustomStringConvertible {
 
 protocol DeclProtocol: SyntaxProtocol {
     var id: String { get }
-    var accessLevel: AccessLevel { get }
+    var modifiers: ModifierListSyntax? { get }
 }
 
 extension DeclProtocol {
     
-    var documentation: [String]? {
-        let items: [String]? = leadingTrivia?.compactMap {
-            if case let .docLineComment(text) = $0 {
-                return text
-            }
-            else if case let .docBlockComment(text) = $0 {
-                return text
-            }
-            return nil
+    var comments: [Comment] {
+        guard let trivia = leadingTrivia else {
+            return []
         }
-        return items?.count != 0 ? items : nil
+        
+        return trivia.compactMap {
+            switch $0 {
+            case let .lineComment(text):
+                return Comment(kind: .line, text: text)
+            case let .blockComment(text):
+                return Comment(kind: .block, text: text)
+            case let .docLineComment(text):
+                return Comment(kind: .docLine, text: text)
+            case let .docBlockComment(text):
+                return Comment(kind: .docBlock, text: text)
+            default:
+                return nil
+            }
+        }
     }
     
-    func accessLevel(modifierList: ModifierListSyntax?) -> AccessLevel {
-        guard let modifierList = modifierList else {
+    var accessLevel: AccessLevel {
+        guard let modifierList = modifiers else {
             return .internal
         }
         
@@ -100,30 +121,18 @@ extension DeclProtocol {
 // MARK: -
 
 extension TypealiasDeclSyntax: DeclProtocol {
-    var accessLevel: AccessLevel {
-        accessLevel(modifierList: modifiers)
-    }
-    
     var id: String {
         identifier.withoutTrivia().description
     }
 }
 
 extension AssociatedtypeDeclSyntax: DeclProtocol {
-    var accessLevel: AccessLevel {
-        accessLevel(modifierList: modifiers)
-    }
-    
     var id: String {
         identifier.withoutTrivia().description
     }
 }
 
 extension ClassDeclSyntax: DeclProtocol {
-    var accessLevel: AccessLevel {
-        accessLevel(modifierList: modifiers)
-    }
-    
     var id: String {
         let genericParameter = genericParameterClause?.withoutTrivia().description ?? ""
         return "\(identifier.withoutTrivia())\(genericParameter)"
@@ -131,10 +140,6 @@ extension ClassDeclSyntax: DeclProtocol {
 }
 
 extension StructDeclSyntax: DeclProtocol {
-    var accessLevel: AccessLevel {
-        accessLevel(modifierList: modifiers)
-    }
-    
     var id: String {
         let genericParameter = genericParameterClause?.withoutTrivia().description ?? ""
         return "\(identifier.withoutTrivia())\(genericParameter)"
@@ -142,30 +147,18 @@ extension StructDeclSyntax: DeclProtocol {
 }
 
 extension ProtocolDeclSyntax: DeclProtocol {
-    var accessLevel: AccessLevel {
-        accessLevel(modifierList: modifiers)
-    }
-    
     var id: String {
         identifier.withoutTrivia().description
     }
 }
 
 extension ExtensionDeclSyntax: DeclProtocol {
-    var accessLevel: AccessLevel {
-        accessLevel(modifierList: modifiers)
-    }
-    
     var id: String {
         extendedType.withoutTrivia().description
     }
 }
 
 extension FunctionDeclSyntax: DeclProtocol {
-    var accessLevel: AccessLevel {
-        accessLevel(modifierList: modifiers)
-    }
-    
     var id: String {
         let generic = genericParameterClause?.withoutTrivia().description ?? ""
         return "\(identifier.withoutTrivia())\(generic)\(signature.withoutTrivia())"
@@ -173,10 +166,6 @@ extension FunctionDeclSyntax: DeclProtocol {
 }
 
 extension InitializerDeclSyntax: DeclProtocol {
-    var accessLevel: AccessLevel {
-        accessLevel(modifierList: modifiers)
-    }
-    
     var id: String {
         let optionalMark = optionalMark?.withoutTrivia().description ?? ""
         let generic = genericParameterClause?.withoutTrivia().description ?? ""
@@ -185,10 +174,6 @@ extension InitializerDeclSyntax: DeclProtocol {
 }
 
 extension SubscriptDeclSyntax: DeclProtocol {
-    var accessLevel: AccessLevel {
-        accessLevel(modifierList: modifiers)
-    }
-    
     var id: String {
         let generic = genericParameterClause?.withoutTrivia().description ?? ""
         return "\(subscriptKeyword.withoutTrivia())\(generic)\(indices.withoutTrivia()) \(result.withoutTrivia())"
@@ -196,20 +181,12 @@ extension SubscriptDeclSyntax: DeclProtocol {
 }
 
 extension VariableDeclSyntax: DeclProtocol {
-    var accessLevel: AccessLevel {
-        accessLevel(modifierList: modifiers)
-    }
-    
     var id: String {
         bindings.map { $0.pattern.withoutTrivia().description }.joined(separator: ",")
     }    
 }
 
 extension EnumDeclSyntax: DeclProtocol {
-    var accessLevel: AccessLevel {
-        accessLevel(modifierList: modifiers)
-    }
-    
     var id: String {
         let generic = genericParameters?.withoutTrivia().description ?? ""
         return "\(identifier.withoutTrivia().description)\(generic)"
@@ -217,10 +194,6 @@ extension EnumDeclSyntax: DeclProtocol {
 }
 
 extension EnumCaseDeclSyntax: DeclProtocol {
-    var accessLevel: AccessLevel {
-        accessLevel(modifierList: modifiers)
-    }
-    
     var id: String {
         elements.map {
             let name = $0.identifier.withoutTrivia().description
@@ -231,20 +204,12 @@ extension EnumCaseDeclSyntax: DeclProtocol {
 }
 
 extension OperatorDeclSyntax: DeclProtocol {
-    var accessLevel: AccessLevel {
-        accessLevel(modifierList: modifiers)
-    }
-    
     var id: String {
         "\(operatorKeyword.withoutTrivia()) \(identifier.withoutTrivia())"
     }
 }
 
 extension PrecedenceGroupDeclSyntax: DeclProtocol {
-    var accessLevel: AccessLevel {
-        accessLevel(modifierList: modifiers)
-    }
-    
     var id: String {
         "\(precedencegroupKeyword.withoutTrivia()) \(identifier.withoutTrivia())"
     }

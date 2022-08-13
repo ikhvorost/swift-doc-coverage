@@ -27,14 +27,15 @@ import Foundation
 struct Declaration {
     let decl: DeclProtocol
     let context: [DeclProtocol]
-}
-
-extension Declaration: CustomStringConvertible {
     
-    var description: String {
-        let parent = context.map({ $0.id }).joined(separator: ".")
+    var comments: [Comment] { decl.comments }
+    
+    var name: String {
+        let parent = context
+            .map { $0.id }
+            .joined(separator: ".")
         return parent.isEmpty
-            ? decl.id.description
-            : "\(parent).\(decl.id.description)"
+            ? decl.id
+            : "\(parent).\(decl.id)"
     }
 }
