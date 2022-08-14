@@ -30,6 +30,8 @@ struct Declaration {
     
     var comments: [Comment] { decl.comments }
     
+    var accessLevel: AccessLevel { decl.accessLevel }
+    
     var name: String {
         let parent = context
             .map { $0.id }

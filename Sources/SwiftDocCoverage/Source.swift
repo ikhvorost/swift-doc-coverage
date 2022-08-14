@@ -54,15 +54,8 @@ fileprivate class Visitor: SyntaxVisitor {
         return .skipChildren
     }
 
-    // #if FLAG #else #endif
-    override func visit(_ node: IfConfigDeclSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
-    }
-    
-    override func visit(_ node: IfConfigClauseSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
-    }
-    
+    // IfConfigDeclSyntax
+    // IfConfigClauseSyntax
     // PoundErrorDeclSyntax
     // PoundWarningDeclSyntax
     // PoundSourceLocationSyntax

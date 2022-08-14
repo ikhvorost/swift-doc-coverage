@@ -45,23 +45,6 @@ enum AccessLevel: Int {
     case `private`
 }
 
-extension AccessLevel : CustomStringConvertible {
-    var description: String {
-        switch self {
-        case .open:
-            return "open"
-        case .public:
-            return "public"
-        case .internal:
-            return "internal"
-        case .fileprivate:
-            return "fileprivate"
-        case .private:
-            return "private"
-        }
-    }
-}
-
 protocol DeclProtocol: SyntaxProtocol {
     var id: String { get }
     var modifiers: ModifierListSyntax? { get }
@@ -91,23 +74,23 @@ extension DeclProtocol {
     }
     
     var accessLevel: AccessLevel {
-        guard let modifierList = modifiers else {
+        guard let modifiers = modifiers else {
             return .internal
         }
-        
-        let tokenKinds = modifierList.map { $0.name.tokenKind }
-        for kind in tokenKinds {
-            if case let .identifier(text) = kind, text == "open" {
+
+        for modifier in modifiers {
+            let name = modifier.withoutTrivia().description
+            switch name {
+            case "open":
                 return .open
-            }
-            else if kind == .publicKeyword {
+            case "public":
                 return .public
-            }
-            else if kind == .fileprivateKeyword {
+            case "fileprivate":
                 return .fileprivate
-            }
-            else if kind == .privateKeyword {
+            case "private":
                 return .private
+            default:
+                return .internal
             }
         }
         return .internal

@@ -41,6 +41,30 @@ final class DeclarationTests: XCTestCase {
         XCTAssert(source.declarations[3].name == "Container.Suffix")
     }
     
+    func test_if_endif() throws {
+        let source = try Source(source: """
+        #if compiler(>=5)
+            class A {}
+        #endif
+        #if swift(>=4.2)
+            class B {}
+        #elseif compiler(>=5) && swift(<5)
+            class C {}
+        #endif
+        #if DEBUG
+            class D {}
+        #else
+            class E {}
+        #endif
+        """)
+        XCTAssert(source.declarations.count == 5)
+        XCTAssert(source.declarations[0].name == "A")
+        XCTAssert(source.declarations[1].name == "B")
+        XCTAssert(source.declarations[2].name == "C")
+        XCTAssert(source.declarations[3].name == "D")
+        XCTAssert(source.declarations[4].name == "E")
+    }
+    
     func test_class_actor() throws {
         let source = try Source(source: """
         class Vehicle {}
@@ -161,9 +185,14 @@ final class DeclarationTests: XCTestCase {
         lazy var importer = DataImporter()
         class Math {
             var mathFunction: (Int, Int) -> Int = addTwoInts
+            var value: String = "" {
+                didSet {
+                    numberOfEdits += 1
+                }
+            }
         }
         """)
-        XCTAssert(source.declarations.count == 7)
+        XCTAssert(source.declarations.count == 8)
         XCTAssert(source.declarations[0].name == "name")
         XCTAssert(source.declarations[1].name == "id")
         XCTAssert(source.declarations[2].name == "a,b,c")
@@ -171,6 +200,7 @@ final class DeclarationTests: XCTestCase {
         XCTAssert(source.declarations[4].name == "importer")
         XCTAssert(source.declarations[5].name == "Math")
         XCTAssert(source.declarations[6].name == "Math.mathFunction")
+        XCTAssert(source.declarations[7].name == "Math.value")
     }
     
     func test_enum() throws {
@@ -257,6 +287,35 @@ final class DeclarationTests: XCTestCase {
         XCTAssert(source.declarations[9].name == "BlackjackCard.rank,suit")
         XCTAssert(source.declarations[10].name == "BlackjackCard.description")
     }
+    
+    func test_access_level() throws {
+        let source = try Source(source: """
+        open class A {}
+        public class B {}
+        internal class C {}
+        class D {}
+        fileprivate class E {}
+        private class F {}
+        
+        public struct TrackedString {
+            public internal(set) var a = 0
+            fileprivate(set) var b = 0
+            fileprivate private(set) var c = 0
+        }
+        """)
+        XCTAssert(source.declarations.count == 10)
+        XCTAssert(source.declarations[0].accessLevel == .open)
+        XCTAssert(source.declarations[1].accessLevel == .public)
+        XCTAssert(source.declarations[2].accessLevel == .internal)
+        XCTAssert(source.declarations[3].accessLevel == .internal)
+        XCTAssert(source.declarations[4].accessLevel == .fileprivate)
+        XCTAssert(source.declarations[5].accessLevel == .private)
+        
+        XCTAssert(source.declarations[6].accessLevel == .public)
+        XCTAssert(source.declarations[7].accessLevel == .public)
+        XCTAssert(source.declarations[8].accessLevel == .internal)
+        XCTAssert(source.declarations[9].accessLevel == .fileprivate)
+    }
 }
 
 final class DocumentationTests: XCTestCase {
@@ -288,6 +347,13 @@ final class FileTests: XCTestCase {
     let resourcesPath = Bundle.module.path(forResource: "Resources", ofType: nil)!
     let userFileURL = Bundle.module.url(forResource: "User", withExtension: "swift", subdirectory: "Resources/Test")!
     
+    func test_file() throws {
+        let source = try Source(fileURL: userFileURL)
+        source.declarations.forEach {
+            print($0)
+        }
+    }
+    
     func test_scan() throws {
         let urls = try scan(path: resourcesPath)
         XCTAssert(urls.count == 1)
@@ -296,13 +362,6 @@ final class FileTests: XCTestCase {
     func test_scan_not_found() throws {
         XCTAssertThrowsError(try scan(path: "bad/path")) { error in
             XCTAssert(error as? ScanError == .fileNotFound)
-        }
-    }
-    
-    func test_file() throws {
-        let source = try Source(fileURL: userFileURL)
-        source.declarations.forEach {
-            print($0)
         }
     }
 }
