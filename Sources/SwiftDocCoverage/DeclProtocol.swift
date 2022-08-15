@@ -95,10 +95,6 @@ extension DeclProtocol {
         }
         return .internal
     }
-    
-    func location(sourceLocationConverter: SourceLocationConverter) -> SourceLocation {
-        startLocation(converter: sourceLocationConverter, afterLeadingTrivia: true)
-    }
 }
 
 // MARK: -

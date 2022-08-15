@@ -1,4 +1,4 @@
-//  scan.swift
+//  Coverage.swift
 //
 //  Created by Iurii Khvorost <iurii.khvorost@gmail.com> on 05.08.2022.
 //  Copyright © 2022 Iurii Khvorost. All rights reserved.

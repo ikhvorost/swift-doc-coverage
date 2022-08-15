@@ -22,14 +22,15 @@
 //  THE SOFTWARE.
 
 import Foundation
+import SwiftSyntax
 
 
 struct Declaration {
     let decl: DeclProtocol
     let context: [DeclProtocol]
+    let startLocation: SourceLocation
     
     var comments: [Comment] { decl.comments }
-    
     var accessLevel: AccessLevel { decl.accessLevel }
     
     var name: String {

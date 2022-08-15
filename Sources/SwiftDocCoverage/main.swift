@@ -18,3 +18,7 @@ let version = 1.0
    --version               Show the version.
    -h, --help              Show help information.
  */
+
+// -o, --output <output>   The path for generated report
+// --minimum-access-level: public
+// --report-style: text, warnings, json

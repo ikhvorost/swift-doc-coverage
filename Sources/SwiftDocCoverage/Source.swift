@@ -29,14 +29,17 @@ import SwiftSyntaxParser
 fileprivate class Visitor: SyntaxVisitor {
     var declarations = [Declaration]()
     var context = [DeclProtocol]()
+    let sourceLocationConverter: SourceLocationConverter
     
-    init(sourceFile: SourceFileSyntax) {
+    init(sourceFile: SourceFileSyntax, sourceLocationConverter: SourceLocationConverter) {
+        self.sourceLocationConverter = sourceLocationConverter
         super.init()
         walk(sourceFile)
     }
     
     func append(decl: DeclProtocol) {
-        let declaration = Declaration(decl: decl, context: context)
+        let startLocation = decl.startLocation(converter: sourceLocationConverter, afterLeadingTrivia: true)
+        let declaration = Declaration(decl: decl, context: context, startLocation: startLocation)
         declarations.append(declaration)
     }
    
@@ -158,27 +161,27 @@ fileprivate class Visitor: SyntaxVisitor {
     }
 }
 
-struct Source {
-    let fileURL: URL?
-    let sourceLocationConverter: SourceLocationConverter
+struct SourceCode {
     let declarations: [Declaration]
-    
-    private init(sourceFile: SourceFileSyntax, fileURL: URL? = nil) throws {
-        self.fileURL = fileURL
-        let file = fileURL?.absoluteString ?? ""
-        sourceLocationConverter = SourceLocationConverter(file: file, tree: sourceFile)
-        
-        let visitor = Visitor(sourceFile: sourceFile)
-        declarations = visitor.declarations
-    }
-    
-    init(fileURL: URL) throws {
-        let sourceFile = try SyntaxParser.parse(fileURL)
-        try self.init(sourceFile: sourceFile, fileURL: fileURL)
-    }
     
     init(source: String) throws {
         let sourceFile = try SyntaxParser.parse(source: source)
-        try self.init(sourceFile: sourceFile)
+        let sourceLocationConverter = SourceLocationConverter(file: "", tree: sourceFile)
+        let visitor = Visitor(sourceFile: sourceFile, sourceLocationConverter: sourceLocationConverter)
+        declarations = visitor.declarations
+    }
+}
+
+struct SourceFile {
+    let fileURL: URL
+    let declarations: [Declaration]
+    
+    init(fileURL: URL) throws {
+        self.fileURL = fileURL
+        
+        let sourceFile = try SyntaxParser.parse(fileURL)
+        let sourceLocationConverter = SourceLocationConverter(file: fileURL.absoluteString, tree: sourceFile)
+        let visitor = Visitor(sourceFile: sourceFile, sourceLocationConverter: sourceLocationConverter)
+        declarations = visitor.declarations
     }
 }

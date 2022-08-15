@@ -14,7 +14,7 @@ extension String : LocalizedError {
 final class DeclarationTests: XCTestCase {
     
     func test_typealias() throws {
-        let source = try Source(source: """
+        let source = try SourceCode(source: """
         typealias SSN = Int
         class Audio {
             typealias AudioSample = UInt16
@@ -27,7 +27,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_associatedtype() throws {
-        let source = try Source(source: """
+        let source = try SourceCode(source: """
         protocol Container {
             associatedtype Item
             associatedtype Element: Equatable
@@ -42,7 +42,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_if_endif() throws {
-        let source = try Source(source: """
+        let source = try SourceCode(source: """
         #if compiler(>=5)
             class A {}
         #endif
@@ -66,7 +66,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_class_actor() throws {
-        let source = try Source(source: """
+        let source = try SourceCode(source: """
         class Vehicle {}
         class Bicycle: Vehicle {}
         class Stack<Element> {}
@@ -80,7 +80,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_struct() throws {
-        let source = try Source(source: """
+        let source = try SourceCode(source: """
         struct Book {}
         struct Person: FullyNamed {}
         struct Stack<Element> {}
@@ -92,7 +92,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_protocol() throws {
-        let source = try Source(source: """
+        let source = try SourceCode(source: """
         protocol Container {}
         protocol InheritingProtocol: SomeProtocol, AnotherProtocol {}
         protocol SomeClassOnlyProtocol: AnyObject, SomeInheritedProtocol {}
@@ -106,7 +106,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_extention() throws {
-        let source = try Source(source: """
+        let source = try SourceCode(source: """
         extension Container {}
         extension SomeType: SomeProtocol, AnotherProtocol {}
         extension Array: TextRepresentable where Element: TextRepresentable {}
@@ -118,7 +118,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_function() throws {
-        let source = try Source(source: """
+        let source = try SourceCode(source: """
         func greet(person: String) -> String { return person; }
         func someFunction(argumentLabel parameterName: Int) {}
         func arithmeticMean(_ numbers: Double...) -> Double {}
@@ -139,7 +139,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_initializer() throws {
-        let source = try Source(source: """
+        let source = try SourceCode(source: """
         struct Color {
             init() {}
             override init() {}
@@ -160,7 +160,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_subscript() throws {
-        let source = try Source(source: """
+        let source = try SourceCode(source: """
         struct TimesTable {
             subscript(index: Int) -> Int { return multiplier * index }
             subscript(row: Int, column: Int) -> Double {}
@@ -177,7 +177,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_variable() throws {
-        let source = try Source(source: """
+        let source = try SourceCode(source: """
         let name: String
         let id: Int = 123
         let a, b, c: Int
@@ -186,13 +186,15 @@ final class DeclarationTests: XCTestCase {
         class Math {
             var mathFunction: (Int, Int) -> Int = addTwoInts
             var value: String = "" {
-                didSet {
-                    numberOfEdits += 1
-                }
+                didSet { numberOfEdits += 1 }
+            }
+            var max: Int {
+                get { 0 }
+                set { }
             }
         }
         """)
-        XCTAssert(source.declarations.count == 8)
+        XCTAssert(source.declarations.count == 9)
         XCTAssert(source.declarations[0].name == "name")
         XCTAssert(source.declarations[1].name == "id")
         XCTAssert(source.declarations[2].name == "a,b,c")
@@ -201,10 +203,11 @@ final class DeclarationTests: XCTestCase {
         XCTAssert(source.declarations[5].name == "Math")
         XCTAssert(source.declarations[6].name == "Math.mathFunction")
         XCTAssert(source.declarations[7].name == "Math.value")
+        XCTAssert(source.declarations[8].name == "Math.max")
     }
     
     func test_enum() throws {
-        let source = try Source(source: """
+        let source = try SourceCode(source: """
         enum CompassPoint {
             case north, south
             case east
@@ -223,7 +226,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_precedencegroup_operator() throws {
-        let source = try Source(source: """
+        let source = try SourceCode(source: """
         precedencegroup ForwardPipe {
             associativity: left
         }
@@ -235,7 +238,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_nested_types() throws {
-        let source = try Source(source: """
+        let source = try SourceCode(source: """
         struct BlackjackCard {
 
             // nested Suit enumeration
@@ -289,7 +292,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_access_level() throws {
-        let source = try Source(source: """
+        let source = try SourceCode(source: """
         open class A {}
         public class B {}
         internal class C {}
@@ -321,7 +324,7 @@ final class DeclarationTests: XCTestCase {
 final class DocumentationTests: XCTestCase {
     
     func test_comments() throws {
-        let source = try Source(source: """
+        let source = try SourceCode(source: """
         // A developer line comment
         /*
         A developer block comment
@@ -345,23 +348,21 @@ final class DocumentationTests: XCTestCase {
 final class FileTests: XCTestCase {
     
     let resourcesPath = Bundle.module.path(forResource: "Resources", ofType: nil)!
-    let userFileURL = Bundle.module.url(forResource: "User", withExtension: "swift", subdirectory: "Resources/Test")!
     
-    func test_file() throws {
-        let source = try Source(fileURL: userFileURL)
-        source.declarations.forEach {
-            print($0)
-        }
-    }
-    
-    func test_scan() throws {
-        let urls = try scan(path: resourcesPath)
-        XCTAssert(urls.count == 1)
-    }
-    
-    func test_scan_not_found() throws {
+    func test_scan_notfound() throws {
         XCTAssertThrowsError(try scan(path: "bad/path")) { error in
             XCTAssert(error as? ScanError == .fileNotFound)
         }
+    }
+    
+    func test_scan_dir() throws {
+        let urls = try scan(path: resourcesPath)
+        XCTAssert(urls.count == 5)
+    }
+    
+    func test_file() throws {
+        let userFileURL = Bundle.module.url(forResource: "Rect", withExtension: "swift", subdirectory: "Resources/Rect")!
+        let source = try SourceFile(fileURL: userFileURL)
+        XCTAssert(source.declarations.count == 4)
     }
 }
