@@ -5,12 +5,6 @@ import XCTest
 import SwiftSyntax
 import SwiftSyntaxParser
 
-
-/// String errors
-extension String : LocalizedError {
-    public var errorDescription: String? { return self }
-}
-
 final class DeclarationTests: XCTestCase {
     
     func test_typealias() throws {
@@ -350,14 +344,15 @@ final class FileTests: XCTestCase {
     let resourcesPath = Bundle.module.path(forResource: "Resources", ofType: nil)!
     
     func test_scan_notfound() throws {
-        XCTAssertThrowsError(try scan(path: "bad/path")) { error in
-            XCTAssert(error as? ScanError == .fileNotFound)
+        XCTAssertThrowsError(try Coverage(path: "bad/path")) { error in
+            XCTAssert(error.localizedDescription == "File or directory not existed.")
         }
     }
     
     func test_scan_dir() throws {
-        let urls = try scan(path: resourcesPath)
-        XCTAssert(urls.count == 5)
+        let coverage = try Coverage(path: resourcesPath)
+        XCTAssert(coverage.sources.count == 5)
+        coverage.reportUndocumented(accessLevel: .public)
     }
     
     func test_file() throws {

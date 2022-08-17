@@ -1,7 +1,9 @@
 import Foundation
 
-struct Rect {
-    var origin = Point()
+/// Rect
+public struct Rect {
+    //
+    public var origin = Point()
     var size = Size()
     var center: Point {
         get {

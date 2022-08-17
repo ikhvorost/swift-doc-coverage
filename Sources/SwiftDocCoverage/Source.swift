@@ -39,7 +39,7 @@ fileprivate class Visitor: SyntaxVisitor {
     
     func append(decl: DeclProtocol) {
         let startLocation = decl.startLocation(converter: sourceLocationConverter, afterLeadingTrivia: true)
-        let declaration = Declaration(decl: decl, context: context, startLocation: startLocation)
+        let declaration = Declaration(decl: decl, context: context, line: startLocation.line ?? 0)
         declarations.append(declaration)
     }
    

@@ -24,14 +24,15 @@
 import Foundation
 
 
-enum ScanError: String, Error {
-    case fileNotFound = "File not found."
+/// Error
+extension String : LocalizedError {
+    public var errorDescription: String? { return self }
 }
 
-func scan(path: String, suffix: String = ".swift") throws -> [URL]  {
+fileprivate func scan(path: String, extention: String) throws -> [URL]  {
     var isDirectory: ObjCBool = false
     guard FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory) else {
-        throw ScanError.fileNotFound
+        throw "File or directory not existed."
     }
     
     if isDirectory.boolValue {
@@ -44,7 +45,7 @@ func scan(path: String, suffix: String = ".swift") throws -> [URL]  {
                       let isDirectory = resourceValues.isDirectory,
                       !isDirectory,
                       let name = resourceValues.name,
-                      name.hasSuffix(suffix)
+                      name.hasSuffix(extention)
                 else {
                     continue
                 }
@@ -55,10 +56,70 @@ func scan(path: String, suffix: String = ".swift") throws -> [URL]  {
         return urls
     }
     else {
-        guard path.hasSuffix(suffix) else {
-            throw ScanError.fileNotFound
+        guard path.hasSuffix(extention) else {
+            throw "Not swift file."
         }
         let url = URL(fileURLWithPath: path)
         return [url]
+    }
+}
+
+struct Coverage {
+    let sources: [SourceFile]
+    
+    init(paths: [String]) throws {
+        let urls = try paths.flatMap { try scan(path: $0, extention: ".swift") }
+        guard urls.count > 0 else {
+            throw "Swift files not found."
+        }
+
+        sources = try urls.map { try SourceFile(fileURL: $0) }
+    }
+    
+    init(path: String) throws {
+        try self.init(paths: [path])
+    }
+    
+    func reportUndocumented(accessLevel: AccessLevel) {
+        var totalCount = 0
+        var totalUndocumented = 0
+        
+        for source in sources {
+            let path = source.fileURL.absoluteString.replacingOccurrences(of: "file://", with: "")
+            let fileName = NSString(string: path).lastPathComponent
+            
+            var count = 0
+            var undocumented = [String]()
+            for declaration in source.declarations {
+                if declaration.accessLevel.rawValue <= accessLevel.rawValue {
+                    if declaration.docComment == nil {
+                        undocumented.append("<\(fileName):\(declaration.line)> \(declaration.name)")
+                    }
+                    count += 1
+                }
+            }
+            
+            totalCount += count
+            totalUndocumented += undocumented.count
+            
+            // Skip
+            guard count > 0 else {
+                continue
+            }
+            
+            let persent = (count - undocumented.count) * 100 / count
+            print("\(path) - \(persent)%")
+            
+            if undocumented.count > 0 {
+                print("Undocumented:")
+                print(undocumented.joined(separator: "\n"), "\n")
+                //print("\n")
+            }
+        }
+        
+        let total = totalUndocumented > 0 && totalCount > 0
+            ? (totalCount - totalUndocumented) * 100 / totalCount
+            : 100
+        print("Total - \(total)%")
     }
 }

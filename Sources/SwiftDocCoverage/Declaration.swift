@@ -25,20 +25,33 @@ import Foundation
 import SwiftSyntax
 
 
-struct Declaration {
+class Declaration {
     let decl: DeclProtocol
     let context: [DeclProtocol]
-    let startLocation: SourceLocation
+    let line: Int
     
-    var comments: [Comment] { decl.comments }
-    var accessLevel: AccessLevel { decl.accessLevel }
+    lazy var accessLevel: AccessLevel = { decl.accessLevel }()
     
-    var name: String {
+    lazy var comments: [Comment] = { decl.comments }()
+    lazy var docComment: String? = {
+        let text = comments
+            .compactMap { $0.isDoc ? $0.text : nil }
+            .joined(separator: "")
+        return text.isEmpty ? nil : text
+    }()
+    
+    lazy var name: String = {
         let parent = context
             .map { $0.id }
             .joined(separator: ".")
         return parent.isEmpty
             ? decl.id
             : "\(parent).\(decl.id)"
+    }()
+    
+    init(decl: DeclProtocol, context: [DeclProtocol], line: Int) {
+        self.decl = decl
+        self.context = context
+        self.line = line
     }
 }

@@ -35,6 +35,8 @@ struct Comment {
     
     let kind: Kind
     let text: String
+    
+    var isDoc: Bool { kind == .docLine || kind == .docBlock }
 }
 
 enum AccessLevel: Int {
