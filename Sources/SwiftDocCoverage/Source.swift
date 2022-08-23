@@ -29,17 +29,23 @@ import SwiftSyntaxParser
 fileprivate class Visitor: SyntaxVisitor {
     var declarations = [Declaration]()
     var context = [DeclProtocol]()
-    let sourceLocationConverter: SourceLocationConverter
+    let converter: SourceLocationConverter
+    let minAccessLevel: AccessLevel
     
-    init(sourceFile: SourceFileSyntax, sourceLocationConverter: SourceLocationConverter) {
-        self.sourceLocationConverter = sourceLocationConverter
+    init(sourceFile: SourceFileSyntax, converter: SourceLocationConverter, minAccessLevel: AccessLevel) {
+        self.converter = converter
+        self.minAccessLevel = minAccessLevel
         super.init()
         walk(sourceFile)
     }
     
     func append(decl: DeclProtocol) {
-        let startLocation = decl.startLocation(converter: sourceLocationConverter, afterLeadingTrivia: true)
-        let declaration = Declaration(decl: decl, context: context, line: startLocation.line ?? 0)
+        guard decl.accessLevel.rawValue <= minAccessLevel.rawValue else {
+            return
+        }
+        
+        let startLocation = decl.startLocation(converter: converter, afterLeadingTrivia: true)
+        let declaration = Declaration(decl: decl, context: context, line: startLocation.line ?? 0, column: startLocation.column ?? 0)
         declarations.append(declaration)
     }
    
@@ -161,27 +167,36 @@ fileprivate class Visitor: SyntaxVisitor {
     }
 }
 
-struct SourceCode {
+struct Source {
+    let fileURL: URL?
     let declarations: [Declaration]
     
-    init(source: String) throws {
-        let sourceFile = try SyntaxParser.parse(source: source)
-        let sourceLocationConverter = SourceLocationConverter(file: "", tree: sourceFile)
-        let visitor = Visitor(sourceFile: sourceFile, sourceLocationConverter: sourceLocationConverter)
+    var undocumented: [Declaration] {
+        declarations.filter { $0.hasDoc == false }
+    }
+    
+    var coverage: Int {
+        let count = declarations.count
+        guard count > 0 else {
+            return -1
+        }
+        return (count - undocumented.count) * 100 / count
+    }
+    
+    private init(fileURL: URL?, sourceFile: SourceFileSyntax, minAccessLevel: AccessLevel) throws {
+        self.fileURL = fileURL
+        let converter = SourceLocationConverter(file: "", tree: sourceFile)
+        let visitor = Visitor(sourceFile: sourceFile, converter: converter, minAccessLevel: minAccessLevel)
         declarations = visitor.declarations
     }
-}
-
-struct SourceFile {
-    let fileURL: URL
-    let declarations: [Declaration]
     
-    init(fileURL: URL) throws {
-        self.fileURL = fileURL
-        
+    init(source: String, minAccessLevel: AccessLevel = .private) throws {
+        let sourceFile = try SyntaxParser.parse(source: source)
+        try self.init(fileURL: nil, sourceFile: sourceFile, minAccessLevel: minAccessLevel)
+    }
+    
+    init(fileURL: URL, minAccessLevel: AccessLevel = .private) throws {
         let sourceFile = try SyntaxParser.parse(fileURL)
-        let sourceLocationConverter = SourceLocationConverter(file: fileURL.absoluteString, tree: sourceFile)
-        let visitor = Visitor(sourceFile: sourceFile, sourceLocationConverter: sourceLocationConverter)
-        declarations = visitor.declarations
+        try self.init(fileURL:fileURL, sourceFile: sourceFile, minAccessLevel: minAccessLevel)
     }
 }

@@ -29,6 +29,7 @@ class Declaration {
     let decl: DeclProtocol
     let context: [DeclProtocol]
     let line: Int
+    let column: Int
     
     lazy var accessLevel: AccessLevel = { decl.accessLevel }()
     
@@ -39,6 +40,7 @@ class Declaration {
             .joined(separator: "")
         return text.isEmpty ? nil : text
     }()
+    var hasDoc: Bool { docComment != nil }
     
     lazy var name: String = {
         let parent = context
@@ -49,9 +51,10 @@ class Declaration {
             : "\(parent).\(decl.id)"
     }()
     
-    init(decl: DeclProtocol, context: [DeclProtocol], line: Int) {
+    init(decl: DeclProtocol, context: [DeclProtocol], line: Int, column: Int) {
         self.decl = decl
         self.context = context
         self.line = line
+        self.column = column
     }
 }

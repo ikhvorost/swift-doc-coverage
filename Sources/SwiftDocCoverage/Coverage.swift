@@ -24,15 +24,24 @@
 import Foundation
 
 
-/// Error
 extension String : LocalizedError {
     public var errorDescription: String? { return self }
+}
+
+fileprivate extension URL {
+    var fileName: String {
+        NSString(string: absoluteString).lastPathComponent
+    }
+    
+    var path: String {
+        absoluteString.replacingOccurrences(of: "file://", with: "")
+    }
 }
 
 fileprivate func scan(path: String, extention: String) throws -> [URL]  {
     var isDirectory: ObjCBool = false
     guard FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory) else {
-        throw "File or directory not existed."
+        throw "Path not found."
     }
     
     if isDirectory.boolValue {
@@ -65,61 +74,60 @@ fileprivate func scan(path: String, extention: String) throws -> [URL]  {
 }
 
 struct Coverage {
-    let sources: [SourceFile]
+    let totalCount: Int
+    let undocumentedCount: Int
+    let sources: [Source]
     
-    init(paths: [String]) throws {
+    init(paths: [String], minAccessLevel: AccessLevel = .private) throws {
         let urls = try paths.flatMap { try scan(path: $0, extention: ".swift") }
         guard urls.count > 0 else {
             throw "Swift files not found."
         }
 
-        sources = try urls.map { try SourceFile(fileURL: $0) }
-    }
-    
-    init(path: String) throws {
-        try self.init(paths: [path])
-    }
-    
-    func reportUndocumented(accessLevel: AccessLevel) {
-        var totalCount = 0
-        var totalUndocumented = 0
+        sources = try urls.compactMap {
+            let source = try Source(fileURL: $0, minAccessLevel: minAccessLevel)
+            return source.declarations.count > 0
+                ? source
+                : nil
+        }
         
+        totalCount = sources.reduce(0, { $0 + $1.declarations.count })
+        undocumentedCount = sources.reduce(0, { $0 + $1.undocumented.count })
+    }
+    
+    init(path: String, minAccessLevel: AccessLevel = .private) throws {
+        try self.init(paths: [path], minAccessLevel: minAccessLevel)
+    }
+    
+    func printReport() {
         for source in sources {
-            let path = source.fileURL.absoluteString.replacingOccurrences(of: "file://", with: "")
-            let fileName = NSString(string: path).lastPathComponent
+            assert(source.declarations.count > 0)
+            assert(source.fileURL != nil)
             
-            var count = 0
-            var undocumented = [String]()
-            for declaration in source.declarations {
-                if declaration.accessLevel.rawValue <= accessLevel.rawValue {
-                    if declaration.docComment == nil {
-                        undocumented.append("<\(fileName):\(declaration.line)> \(declaration.name)")
-                    }
-                    count += 1
-                }
-            }
+            let sourceTotalCount = source.declarations.count
+            let undocumented = source.undocumented
+                .map { "<\(source.fileURL!.fileName):\($0.line):\($0.column)> \($0.name)" }
             
-            totalCount += count
-            totalUndocumented += undocumented.count
-            
-            // Skip
-            guard count > 0 else {
-                continue
-            }
-            
-            let persent = (count - undocumented.count) * 100 / count
-            print("\(path) - \(persent)%")
+            print("\(source.fileURL!.path): \(source.coverage)% (\(sourceTotalCount - source.undocumented.count)/\(sourceTotalCount))")
             
             if undocumented.count > 0 {
                 print("Undocumented:")
                 print(undocumented.joined(separator: "\n"), "\n")
-                //print("\n")
             }
         }
         
-        let total = totalUndocumented > 0 && totalCount > 0
-            ? (totalCount - totalUndocumented) * 100 / totalCount
+        let total = undocumentedCount > 0 && totalCount > 0
+            ? (totalCount - undocumentedCount) * 100 / totalCount
             : 100
-        print("Total - \(total)%")
+        print("Total: \(total)% (\(totalCount - undocumentedCount)/\(totalCount))")
+    }
+    
+    func printWarnings() {
+        sources.forEach {
+            let path = $0.fileURL!.path
+            $0.undocumented.forEach {
+                print("\(path):\($0.line):\($0.column): warning: No documentation.")
+            }
+        }
     }
 }

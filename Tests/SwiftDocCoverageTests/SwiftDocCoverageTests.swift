@@ -8,7 +8,7 @@ import SwiftSyntaxParser
 final class DeclarationTests: XCTestCase {
     
     func test_typealias() throws {
-        let source = try SourceCode(source: """
+        let source = try Source(source: """
         typealias SSN = Int
         class Audio {
             typealias AudioSample = UInt16
@@ -21,7 +21,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_associatedtype() throws {
-        let source = try SourceCode(source: """
+        let source = try Source(source: """
         protocol Container {
             associatedtype Item
             associatedtype Element: Equatable
@@ -36,7 +36,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_if_endif() throws {
-        let source = try SourceCode(source: """
+        let source = try Source(source: """
         #if compiler(>=5)
             class A {}
         #endif
@@ -60,7 +60,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_class_actor() throws {
-        let source = try SourceCode(source: """
+        let source = try Source(source: """
         class Vehicle {}
         class Bicycle: Vehicle {}
         class Stack<Element> {}
@@ -74,7 +74,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_struct() throws {
-        let source = try SourceCode(source: """
+        let source = try Source(source: """
         struct Book {}
         struct Person: FullyNamed {}
         struct Stack<Element> {}
@@ -86,7 +86,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_protocol() throws {
-        let source = try SourceCode(source: """
+        let source = try Source(source: """
         protocol Container {}
         protocol InheritingProtocol: SomeProtocol, AnotherProtocol {}
         protocol SomeClassOnlyProtocol: AnyObject, SomeInheritedProtocol {}
@@ -100,7 +100,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_extention() throws {
-        let source = try SourceCode(source: """
+        let source = try Source(source: """
         extension Container {}
         extension SomeType: SomeProtocol, AnotherProtocol {}
         extension Array: TextRepresentable where Element: TextRepresentable {}
@@ -112,7 +112,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_function() throws {
-        let source = try SourceCode(source: """
+        let source = try Source(source: """
         func greet(person: String) -> String { return person; }
         func someFunction(argumentLabel parameterName: Int) {}
         func arithmeticMean(_ numbers: Double...) -> Double {}
@@ -133,7 +133,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_initializer() throws {
-        let source = try SourceCode(source: """
+        let source = try Source(source: """
         struct Color {
             init() {}
             override init() {}
@@ -154,7 +154,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_subscript() throws {
-        let source = try SourceCode(source: """
+        let source = try Source(source: """
         struct TimesTable {
             subscript(index: Int) -> Int { return multiplier * index }
             subscript(row: Int, column: Int) -> Double {}
@@ -171,7 +171,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_variable() throws {
-        let source = try SourceCode(source: """
+        let source = try Source(source: """
         let name: String
         let id: Int = 123
         let a, b, c: Int
@@ -201,7 +201,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_enum() throws {
-        let source = try SourceCode(source: """
+        let source = try Source(source: """
         enum CompassPoint {
             case north, south
             case east
@@ -220,7 +220,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_precedencegroup_operator() throws {
-        let source = try SourceCode(source: """
+        let source = try Source(source: """
         precedencegroup ForwardPipe {
             associativity: left
         }
@@ -232,7 +232,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_nested_types() throws {
-        let source = try SourceCode(source: """
+        let source = try Source(source: """
         struct BlackjackCard {
 
             // nested Suit enumeration
@@ -286,7 +286,7 @@ final class DeclarationTests: XCTestCase {
     }
     
     func test_access_level() throws {
-        let source = try SourceCode(source: """
+        let source = try Source(source: """
         open class A {}
         public class B {}
         internal class C {}
@@ -318,7 +318,7 @@ final class DeclarationTests: XCTestCase {
 final class DocumentationTests: XCTestCase {
     
     func test_comments() throws {
-        let source = try SourceCode(source: """
+        let source = try Source(source: """
         // A developer line comment
         /*
         A developer block comment
@@ -343,21 +343,31 @@ final class FileTests: XCTestCase {
     
     let resourcesPath = Bundle.module.path(forResource: "Resources", ofType: nil)!
     
+    let rectFileURL = Bundle.module.url(forResource: "Rect", withExtension: "swift", subdirectory: "Resources/Rect")!
+    lazy var rectFilePath: String = { rectFileURL.absoluteString.replacingOccurrences(of: "file://", with: "") } ()
+    
+    func test_file() throws {
+        let source = try Source(fileURL: rectFileURL, minAccessLevel: .private)
+        XCTAssert(source.declarations.count == 4)
+    }
+    
     func test_scan_notfound() throws {
         XCTAssertThrowsError(try Coverage(path: "bad/path")) { error in
             XCTAssert(error.localizedDescription == "File or directory not existed.")
         }
     }
     
-    func test_scan_dir() throws {
-        let coverage = try Coverage(path: resourcesPath)
-        XCTAssert(coverage.sources.count == 5)
-        coverage.reportUndocumented(accessLevel: .public)
+    func test_report() throws {
+        let coverage = try Coverage(path: rectFilePath, minAccessLevel: .public)
+        XCTAssert(coverage.totalCount == 4)
+        XCTAssert(coverage.undocumentedCount == 2)
+        XCTAssert(coverage.sources.count == 1)
+        coverage.printReport()
     }
     
-    func test_file() throws {
-        let userFileURL = Bundle.module.url(forResource: "Rect", withExtension: "swift", subdirectory: "Resources/Rect")!
-        let source = try SourceFile(fileURL: userFileURL)
-        XCTAssert(source.declarations.count == 4)
+    func test_warnings() throws {
+        let path = rectFileURL.absoluteString.replacingOccurrences(of: "file://", with: "")
+        let coverage = try Coverage(path: path, minAccessLevel: .public)
+        coverage.printWarnings()
     }
 }
