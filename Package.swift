@@ -9,7 +9,8 @@ let package = Package(
         .macOS(.v10_14),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-syntax.git", from: "0.50600.1")
+        .package(url: "https://github.com/apple/swift-syntax.git", from: "0.50600.1"),
+        .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.1.3")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -19,6 +20,7 @@ let package = Package(
             dependencies: [
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxParser", package: "swift-syntax"),
+                .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ]
         ),
         .testTarget(

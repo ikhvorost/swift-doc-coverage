@@ -362,7 +362,7 @@ final class FileTests: XCTestCase {
         XCTAssert(coverage.totalCount == 4)
         XCTAssert(coverage.undocumentedCount == 2)
         XCTAssert(coverage.sources.count == 1)
-        coverage.printReport()
+        coverage.printStatistics()
     }
     
     func test_warnings() throws {
