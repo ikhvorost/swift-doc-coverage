@@ -39,7 +39,7 @@ struct Comment {
     var isDoc: Bool { kind == .docLine || kind == .docBlock }
 }
 
-enum AccessLevel: Int {
+public enum AccessLevel: Int {
     case `open`
     case `public`
     case `internal`

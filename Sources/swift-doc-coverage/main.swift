@@ -23,7 +23,7 @@
 
 import Foundation
 import ArgumentParser
-
+import SwiftDocCoverage
 
 // --report-style: text, warnings, json
 

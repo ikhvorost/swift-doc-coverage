@@ -73,13 +73,13 @@ fileprivate func scan(path: String, extention: String) throws -> [URL]  {
     }
 }
 
-struct Coverage {
+public struct Coverage {
     let totalCount: Int
     let undocumentedCount: Int
     let sources: [Source]
     let output: Output
     
-    init(paths: [String], minAccessLevel: AccessLevel = .private, output: Output) throws {
+    public init(paths: [String], minAccessLevel: AccessLevel = .private, output: Output) throws {
         let urls = try paths.flatMap { try scan(path: $0, extention: ".swift") }
         guard urls.count > 0 else {
             throw "Swift files not found."
@@ -102,7 +102,7 @@ struct Coverage {
         try self.init(paths: [path], minAccessLevel: minAccessLevel, output: output)
     }
     
-    func printStatistics() {
+    public func printStatistics() {
         for (i, source) in sources.enumerated() {
             assert(source.declarations.count > 0)
             assert(source.fileURL != nil)
@@ -127,7 +127,7 @@ struct Coverage {
         output.write("Total: \(total)% (\(totalCount - undocumentedCount)/\(totalCount))")
     }
     
-    func printWarnings() {
+    public func printWarnings() {
         sources.forEach {
             let path = $0.fileURL!.path
             $0.undocumented.forEach {

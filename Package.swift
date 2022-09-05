@@ -4,28 +4,36 @@
 import PackageDescription
 
 let package = Package(
-    name: "SwiftDocCoverage",
+    name: "swift-doc-coverage",
     platforms: [
         .macOS(.v10_14),
+    ],
+    products: [
+        .executable(name: "swift-doc-coverage", targets: ["swift-doc-coverage"]),
+        //.library(name: "SwiftDocCoverage", targets: ["SwiftDocCoverage"])
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-syntax.git", from: "0.50600.1"),
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.1.3")
     ],
     targets: [
-        // Targets are the basic building blocks of a package. A target can define a module or a test suite.
-        // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .executableTarget(
+            name: "swift-doc-coverage",
+            dependencies: [
+                .target(name: "SwiftDocCoverage"),
+                .product(name: "ArgumentParser", package: "swift-argument-parser")
+            ]
+        ),
+        .target(
             name: "SwiftDocCoverage",
             dependencies: [
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxParser", package: "swift-syntax"),
-                .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ]
         ),
         .testTarget(
             name: "SwiftDocCoverageTests",
-            dependencies: ["SwiftDocCoverage"],
+            dependencies: ["swift-doc-coverage"],
             resources: [
                 .copy("Resources")
             ]

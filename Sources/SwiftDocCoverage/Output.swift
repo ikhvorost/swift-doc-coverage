@@ -23,7 +23,7 @@
 
 import Foundation
 
-class Output {
+public class Output {
     let stream: UnsafeMutablePointer<FILE>
     
     init(stream: UnsafeMutablePointer<FILE>) {
@@ -36,15 +36,15 @@ class Output {
     }
 }
 
-class TerminalOutput: Output {
+public class TerminalOutput: Output {
     
-    init() {
+    public init() {
         super.init(stream: Darwin.stdout)
     }
 }
 
-class FileOutput: Output {
-    init(path: String) throws {
+public class FileOutput: Output {
+    public init(path: String) throws {
         let fileManager = FileManager.default
         
         if fileManager.fileExists(atPath: path) {

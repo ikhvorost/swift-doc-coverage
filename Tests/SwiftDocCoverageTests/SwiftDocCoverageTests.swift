@@ -353,7 +353,7 @@ final class FileTests: XCTestCase {
     
     func test_scan_notfound() throws {
         XCTAssertThrowsError(try Coverage(path: "bad/path")) { error in
-            XCTAssert(error.localizedDescription == "File or directory not existed.")
+            XCTAssert(error.localizedDescription == "Path not found.")
         }
     }
     
