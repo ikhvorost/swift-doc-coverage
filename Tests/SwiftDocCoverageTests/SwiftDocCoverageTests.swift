@@ -1,9 +1,6 @@
 import XCTest
-//import class Foundation.Bundle
 @testable import SwiftDocCoverage
 
-import SwiftSyntax
-import SwiftSyntaxParser
 
 final class DeclarationTests: XCTestCase {
     
@@ -341,24 +338,21 @@ final class DocumentationTests: XCTestCase {
 
 final class FileTests: XCTestCase {
     
-    let resourcesPath = Bundle.module.path(forResource: "Resources", ofType: nil)!
-    
-    let rectFileURL = Bundle.module.url(forResource: "Rect", withExtension: "swift", subdirectory: "Resources/Rect")!
-    lazy var rectFilePath: String = { rectFileURL.absoluteString.replacingOccurrences(of: "file://", with: "") } ()
+    let fileURL = Bundle.module.url(forResource: "Rect", withExtension: "swift", subdirectory: "Resources/Rect")!
     
     func test_file() throws {
-        let source = try Source(fileURL: rectFileURL, minAccessLevel: .private)
+        let source = try Source(fileURL: fileURL, minAccessLevel: .private)
         XCTAssert(source.declarations.count == 4)
     }
     
     func test_scan_notfound() throws {
-        XCTAssertThrowsError(try Coverage(path: "bad/path")) { error in
+        XCTAssertThrowsError(try Coverage(path: "NotFound")) { error in
             XCTAssert(error.localizedDescription == "Path not found.")
         }
     }
     
     func test_report() throws {
-        let coverage = try Coverage(path: rectFilePath, minAccessLevel: .public)
+        let coverage = try Coverage(path: fileURL.path, minAccessLevel: .public)
         XCTAssert(coverage.totalCount == 4)
         XCTAssert(coverage.undocumentedCount == 2)
         XCTAssert(coverage.sources.count == 1)
@@ -366,8 +360,86 @@ final class FileTests: XCTestCase {
     }
     
     func test_warnings() throws {
-        let path = rectFileURL.absoluteString.replacingOccurrences(of: "file://", with: "")
-        let coverage = try Coverage(path: path, minAccessLevel: .public)
+        let coverage = try Coverage(path: fileURL.path, minAccessLevel: .public)
         coverage.printWarnings()
+    }
+}
+
+extension Process {
+    
+    func run(_ executableURL: URL, arguments: [String]? = nil) throws -> String {
+        self.executableURL = executableURL
+        self.arguments = arguments
+        
+        let pipe = Pipe()
+        standardOutput = pipe
+        standardError = pipe
+        
+        try run()
+        waitUntilExit()
+        
+        guard terminationStatus == EXIT_SUCCESS else {
+            let error = String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8)
+            throw (error?.trimmingCharacters(in: .newlines) ?? "")
+        }
+        
+        let output = String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8)
+        return output?.trimmingCharacters(in: .newlines) ?? ""
+    }
+}
+
+final class ToolTests: XCTestCase {
+    
+    lazy var swiftDocCoverageURL: URL = {
+        Bundle(for: Self.self).bundleURL.deletingLastPathComponent().appendingPathComponent("swift-doc-coverage")
+    }()
+    
+    let fileURL = Bundle.module.url(forResource: "Rect", withExtension: "swift", subdirectory: "Resources/Rect")!
+    
+    func test_not_found() {
+        let process = Process()
+        do {
+            let output = try process.run(swiftDocCoverageURL, arguments: ["NotFound"])
+            XCTFail(output)
+        }
+        catch {
+            XCTAssert(error.localizedDescription == "Error: Path not found.")
+        }
+        XCTAssert(process.terminationStatus == EXIT_FAILURE)
+    }
+    
+    func test_output() throws {
+        let process = Process()
+        let output = try process.run(swiftDocCoverageURL, arguments: [fileURL.path])
+        
+        XCTAssert(process.terminationStatus == EXIT_SUCCESS)
+        XCTAssert(output.contains("Total: 50%"))
+    }
+    
+    func test_warninigs() throws {
+        let process = Process()
+        let output = try process.run(swiftDocCoverageURL, arguments: [fileURL.path, "--report", "warnings"])
+        XCTAssert(process.terminationStatus == EXIT_SUCCESS)
+        XCTAssert(output.contains("warning: No documentation."))
+    }
+    
+    func temporaryDirectory() throws -> URL {
+        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(ProcessInfo.processInfo.globallyUniqueString)
+        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        return url
+    }
+    
+    func test_file_output() throws {
+        let tempDir = try temporaryDirectory()
+        let outputFileURL = tempDir.appendingPathComponent("report.txt")
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+        
+        let process = Process()
+        let output = try process.run(swiftDocCoverageURL, arguments: [fileURL.path, "--output", outputFileURL.path])
+        XCTAssert(process.terminationStatus == EXIT_SUCCESS)
+        XCTAssert(output.isEmpty)
+        
+        let text = try String(contentsOf: outputFileURL)
+        XCTAssert(text.contains("Total: 50%"))
     }
 }

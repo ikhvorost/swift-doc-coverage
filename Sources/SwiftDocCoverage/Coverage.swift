@@ -25,16 +25,12 @@ import Foundation
 
 
 extension String : LocalizedError {
-    public var errorDescription: String? { return self }
+    public var errorDescription: String? { self }
 }
 
 fileprivate extension URL {
     var fileName: String {
         NSString(string: absoluteString).lastPathComponent
-    }
-    
-    var path: String {
-        absoluteString.replacingOccurrences(of: "file://", with: "")
     }
 }
 
