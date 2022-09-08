@@ -23,13 +23,13 @@
 
 import Foundation
 
-struct DeclarationReport {
+struct DeclarationReport: Codable {
     let line: Int
     let column: Int
     let name: String
 }
 
-struct SourceReport {
+struct SourceReport: Codable {
     let path: String
     let totalCount: Int
     let undocumented: [DeclarationReport]
@@ -46,7 +46,7 @@ struct SourceReport {
     }
 }
 
-struct CoverageReport {
+struct CoverageReport: Codable {
     let sources: [SourceReport]
     
     var totalCount: Int {

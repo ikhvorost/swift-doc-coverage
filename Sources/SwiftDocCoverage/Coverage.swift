@@ -135,4 +135,15 @@ public struct Coverage {
             }
         }
     }
+    
+    public func printJson() throws {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        
+        let report = try report()
+        let data = try encoder.encode(report)
+        let json = String(data: data, encoding: .utf8)!
+        
+        output.write(json)
+    }
 }

@@ -44,6 +44,7 @@ enum AccessLevelArgument: String, ExpressibleByArgument {
 enum ReportArgument: String, ExpressibleByArgument {
     case statistics
     case warnings
+    case json
 }
 
 struct SwiftDocCoverage: ParsableCommand {
@@ -59,17 +60,17 @@ struct SwiftDocCoverage: ParsableCommand {
     @Option(name: .shortAndLong, help: "The minimum access level of the symbols considered for coverage statistics: \(AccessLevelArgument.open), \(AccessLevelArgument.public), \(AccessLevelArgument.internal), \(AccessLevelArgument.fileprivate), \(AccessLevelArgument.private).")
     var minimumAccessLevel: AccessLevelArgument = .public
     
-    @Option(name: .shortAndLong, help: "Report modes: \(ReportArgument.statistics.rawValue), \(ReportArgument.warnings.rawValue).")
+    @Option(name: .shortAndLong, help: "Report modes: \(ReportArgument.statistics.rawValue), \(ReportArgument.warnings.rawValue), \(ReportArgument.json.rawValue).")
     var report: ReportArgument = .statistics
     
     @Option(name: .shortAndLong, help: "The file path for generated report.")
     var output: String?
     
     mutating func run() throws {
-        
-        let out: Output = output != nil
-            ? try FileOutput(path: output!)
-            : TerminalOutput()
+        var out: Output = TerminalOutput()
+        if let path = output {
+            out = try FileOutput(path: path)
+        }
         
         let coverage = try Coverage(paths: inputs,
                                     minAccessLevel: minimumAccessLevel.accessLevel,
@@ -80,6 +81,8 @@ struct SwiftDocCoverage: ParsableCommand {
             try coverage.printStatistics()
         case .warnings:
             try coverage.printWarnings()
+        case .json:
+            try coverage.printJson()
         }
     }
 }
