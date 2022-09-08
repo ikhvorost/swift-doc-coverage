@@ -77,9 +77,9 @@ struct SwiftDocCoverage: ParsableCommand {
         
         switch report {
         case .statistics:
-            coverage.printStatistics()
+            try coverage.printStatistics()
         case .warnings:
-            coverage.printWarnings()
+            try coverage.printWarnings()
         }
     }
 }

@@ -353,15 +353,18 @@ final class FileTests: XCTestCase {
     
     func test_report() throws {
         let coverage = try Coverage(path: fileURL.path, minAccessLevel: .public)
-        XCTAssert(coverage.totalCount == 4)
-        XCTAssert(coverage.undocumentedCount == 2)
-        XCTAssert(coverage.sources.count == 1)
-        coverage.printStatistics()
+        let report = try coverage.report()
+        
+        XCTAssert(report.totalCount == 4)
+        XCTAssert(report.totalUndocumentedCount == 2)
+        XCTAssert(report.sources.count == 1)
+        
+        try coverage.printStatistics()
     }
     
     func test_warnings() throws {
         let coverage = try Coverage(path: fileURL.path, minAccessLevel: .public)
-        coverage.printWarnings()
+        try coverage.printWarnings()
     }
 }
 

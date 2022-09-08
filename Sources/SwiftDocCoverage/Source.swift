@@ -168,7 +168,6 @@ fileprivate class Visitor: SyntaxVisitor {
 }
 
 struct Source {
-    let fileURL: URL?
     let declarations: [Declaration]
     
     var undocumented: [Declaration] {
@@ -183,8 +182,7 @@ struct Source {
         return (count - undocumented.count) * 100 / count
     }
     
-    private init(fileURL: URL?, sourceFile: SourceFileSyntax, minAccessLevel: AccessLevel) throws {
-        self.fileURL = fileURL
+    private init(_ sourceFile: SourceFileSyntax, minAccessLevel: AccessLevel) throws {
         let converter = SourceLocationConverter(file: "", tree: sourceFile)
         let visitor = Visitor(sourceFile: sourceFile, converter: converter, minAccessLevel: minAccessLevel)
         declarations = visitor.declarations
@@ -192,11 +190,11 @@ struct Source {
     
     init(source: String, minAccessLevel: AccessLevel = .private) throws {
         let sourceFile = try SyntaxParser.parse(source: source)
-        try self.init(fileURL: nil, sourceFile: sourceFile, minAccessLevel: minAccessLevel)
+        try self.init(sourceFile, minAccessLevel: minAccessLevel)
     }
     
     init(fileURL: URL, minAccessLevel: AccessLevel = .private) throws {
         let sourceFile = try SyntaxParser.parse(fileURL)
-        try self.init(fileURL:fileURL, sourceFile: sourceFile, minAccessLevel: minAccessLevel)
+        try self.init(sourceFile, minAccessLevel: minAccessLevel)
     }
 }

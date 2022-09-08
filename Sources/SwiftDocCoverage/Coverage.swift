@@ -30,7 +30,7 @@ extension String : LocalizedError {
 
 fileprivate extension URL {
     var fileName: String {
-        NSString(string: absoluteString).lastPathComponent
+        NSString(string: path).lastPathComponent
     }
 }
 
@@ -47,8 +47,7 @@ fileprivate func scan(path: String, extention: String) throws -> [URL]  {
         if let enumerator = FileManager.default.enumerator(at: url, includingPropertiesForKeys: [.isDirectoryKey]) {
             for case let fileURL as URL in enumerator {
                 guard let resourceValues = try? fileURL.resourceValues(forKeys: resourceKeys),
-                      let isDirectory = resourceValues.isDirectory,
-                      !isDirectory,
+                      let isDirectory = resourceValues.isDirectory, !isDirectory,
                       let name = resourceValues.name,
                       name.hasSuffix(extention)
                 else {
@@ -70,64 +69,69 @@ fileprivate func scan(path: String, extention: String) throws -> [URL]  {
 }
 
 public struct Coverage {
-    let totalCount: Int
-    let undocumentedCount: Int
-    let sources: [Source]
+    let urls: [URL]
+    let minAccessLevel: AccessLevel
     let output: Output
     
     public init(paths: [String], minAccessLevel: AccessLevel = .private, output: Output) throws {
-        let urls = try paths.flatMap { try scan(path: $0, extention: ".swift") }
+        self.urls = try paths.flatMap { try scan(path: $0, extention: ".swift") }
         guard urls.count > 0 else {
             throw "Swift files not found."
         }
-
-        sources = try urls.compactMap {
-            let source = try Source(fileURL: $0, minAccessLevel: minAccessLevel)
-            return source.declarations.count > 0
-                ? source
-                : nil
-        }
-        
+        self.minAccessLevel = minAccessLevel
         self.output = output
-        
-        totalCount = sources.reduce(0, { $0 + $1.declarations.count })
-        undocumentedCount = sources.reduce(0, { $0 + $1.undocumented.count })
     }
     
     init(path: String, minAccessLevel: AccessLevel = .private, output: Output = TerminalOutput()) throws {
         try self.init(paths: [path], minAccessLevel: minAccessLevel, output: output)
     }
     
-    public func printStatistics() {
-        for (i, source) in sources.enumerated() {
-            assert(source.declarations.count > 0)
-            assert(source.fileURL != nil)
+    @discardableResult
+    func report(_ body: ((SourceReport) -> Void)? = nil) throws -> CoverageReport {
+        var sources = [SourceReport]()
+        
+        try urls.forEach { url in
+            let source = try Source(fileURL: url, minAccessLevel: minAccessLevel)
+            guard source.declarations.count > 0 else {
+                return
+            }
             
-            let sourceTotalCount = source.declarations.count
-            output.write("\(i + 1)) \(source.fileURL!.path): \(source.coverage)% (\(sourceTotalCount - source.undocumented.count)/\(sourceTotalCount))")
+            let undocumented = source.undocumented.map { DeclarationReport(line: $0.line, column: $0.line, name: $0.name) }
+            let sourceReport = SourceReport(path: url.path,
+                                            totalCount: source.declarations.count,
+                                            undocumented: undocumented)
+            sources.append(sourceReport)
+            
+            body?(sourceReport)
+        }
+        
+        return CoverageReport(sources: sources)
+    }
+    
+    public func printStatistics() throws {
+        var i = 1
+        let report = try report() { source in
+            output.write("\(i)) \(source.path): \(source.coverage)% [\(source.totalCount - source.undocumented.count)/\(source.totalCount)]")
             
             if source.undocumented.count > 0 {
                 output.write("Undocumented:")
                 
                 source.undocumented.forEach {
-                    output.write("<\(source.fileURL!.fileName):\($0.line):\($0.column)> \($0.name)")
+                    output.write("<\(source.fileName):\($0.line):\($0.column)> \($0.name)")
                 }
                 
                 output.write("\n", terminator: "")
             }
+            
+            i += 1
         }
-        
-        let total = undocumentedCount > 0 && totalCount > 0
-            ? (totalCount - undocumentedCount) * 100 / totalCount
-            : 100
-        output.write("Total: \(total)% (\(totalCount - undocumentedCount)/\(totalCount))")
+        output.write("Total: \(report.coverage)% [\(report.totalCount - report.totalUndocumentedCount)/\(report.totalCount)]")
     }
     
-    public func printWarnings() {
-        sources.forEach {
-            let path = $0.fileURL!.path
-            $0.undocumented.forEach {
-                output.write("\(path):\($0.line):\($0.column): warning: No documentation.")
+    public func printWarnings() throws {
+        try report { source in
+            source.undocumented.forEach {
+                output.write("\(source.path):\($0.line):\($0.column): warning: No documentation.")
             }
         }
     }

@@ -24,6 +24,16 @@
 import Foundation
 import SwiftSyntax
 
+fileprivate extension String {
+    
+    static let regexNewLine = try! NSRegularExpression(pattern: "\\n\\s+", options: [])
+    
+    func refine() -> String {
+        let range = NSRange(startIndex..., in: self)
+        return Self.regexNewLine.stringByReplacingMatches(in: self, options: [], range: range, withTemplate: " ")
+    }
+ }
+
 
 class Declaration {
     let decl: DeclProtocol
@@ -43,12 +53,12 @@ class Declaration {
     var hasDoc: Bool { docComment != nil }
     
     lazy var name: String = {
-        let parent = context
-            .map { $0.id }
-            .joined(separator: ".")
+        let name = decl.id.refine()
+        let parent = context.map { $0.id }.joined(separator: ".")
+        
         return parent.isEmpty
-            ? decl.id
-            : "\(parent).\(decl.id)"
+            ? name
+            : "\(parent).\(name)"
     }()
     
     init(decl: DeclProtocol, context: [DeclProtocol], line: Int, column: Int) {
