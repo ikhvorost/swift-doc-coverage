@@ -426,6 +426,20 @@ final class ToolTests: XCTestCase {
         XCTAssert(output.contains("warning: No documentation."))
     }
     
+    func test_json() throws {
+        let process = Process()
+        let output = try process.run(swiftDocCoverageURL, arguments: [fileURL.path, "--report", "json"])
+        XCTAssert(process.terminationStatus == EXIT_SUCCESS)
+        
+        if let data = output.data(using: .utf8),
+           let json = try JSONSerialization.jsonObject(with: data) as? [String : Any] {
+            XCTAssert(json["sources"] != nil)
+        }
+        else {
+            XCTFail()
+        }
+    }
+    
     func temporaryDirectory() throws -> URL {
         let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(ProcessInfo.processInfo.globallyUniqueString)
         try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
