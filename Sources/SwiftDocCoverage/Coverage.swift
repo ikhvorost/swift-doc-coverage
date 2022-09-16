@@ -28,13 +28,7 @@ extension String : LocalizedError {
     public var errorDescription: String? { self }
 }
 
-fileprivate extension URL {
-    var fileName: String {
-        NSString(string: path).lastPathComponent
-    }
-}
-
-fileprivate func scan(path: String, extention: String) throws -> [URL]  {
+fileprivate func findFiles(path: String, extention: String) throws -> [URL]  {
     var isDirectory: ObjCBool = false
     guard FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory) else {
         throw "Path not found."
@@ -59,13 +53,12 @@ fileprivate func scan(path: String, extention: String) throws -> [URL]  {
         }
         return urls
     }
-    else {
-        guard path.hasSuffix(extention) else {
-            throw "Not swift file."
-        }
-        let url = URL(fileURLWithPath: path)
-        return [url]
+    
+    guard path.hasSuffix(extention) else {
+        throw "Not swift file."
     }
+    let url = URL(fileURLWithPath: path)
+    return [url]
 }
 
 public struct Coverage {
@@ -73,8 +66,8 @@ public struct Coverage {
     let minAccessLevel: AccessLevel
     let output: Output
     
-    public init(paths: [String], minAccessLevel: AccessLevel = .private, output: Output) throws {
-        self.urls = try paths.flatMap { try scan(path: $0, extention: ".swift") }
+    public init(paths: [String], minAccessLevel: AccessLevel, output: Output = TerminalOutput()) throws {
+        self.urls = try paths.flatMap { try findFiles(path: $0, extention: ".swift") }
         guard urls.count > 0 else {
             throw "Swift files not found."
         }
@@ -82,12 +75,10 @@ public struct Coverage {
         self.output = output
     }
     
-    init(path: String, minAccessLevel: AccessLevel = .private, output: Output = TerminalOutput()) throws {
-        try self.init(paths: [path], minAccessLevel: minAccessLevel, output: output)
-    }
-    
     @discardableResult
     func report(_ body: ((SourceReport) -> Void)? = nil) throws -> CoverageReport {
+        precondition(urls.count > 0)
+        
         var sources = [SourceReport]()
         
         try urls.forEach { url in
@@ -105,10 +96,14 @@ public struct Coverage {
             body?(sourceReport)
         }
         
+        guard sources.count > 0 else {
+            throw "Declarations not found."
+        }
+        
         return CoverageReport(sources: sources)
     }
     
-    public func printStatistics() throws {
+    public func reportStatistics() throws {
         var i = 1
         let report = try report() { source in
             output.write("\(i)) \(source.path): \(source.coverage)% [\(source.totalCount - source.undocumented.count)/\(source.totalCount)]")
@@ -128,7 +123,7 @@ public struct Coverage {
         output.write("Total: \(report.coverage)% [\(report.totalCount - report.totalUndocumentedCount)/\(report.totalCount)]")
     }
     
-    public func printWarnings() throws {
+    public func reportWarnings() throws {
         try report { source in
             source.undocumented.forEach {
                 output.write("\(source.path):\($0.line):\($0.column): warning: No documentation.")
@@ -136,7 +131,7 @@ public struct Coverage {
         }
     }
     
-    public func printJson() throws {
+    public func reportJson() throws {
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
         

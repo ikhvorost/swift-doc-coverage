@@ -44,17 +44,11 @@ public class TerminalOutput: Output {
 }
 
 public class FileOutput: Output {
+    
     public init(path: String) throws {
-        let fileManager = FileManager.default
-        
-        if fileManager.fileExists(atPath: path) {
-            try fileManager.removeItem(atPath: path)
-        }
-        else {
-            let dir = NSString(string: path).deletingLastPathComponent
-            try fileManager.createDirectory(atPath: dir, withIntermediateDirectories: true, attributes: nil)
-            
-            fileManager.createFile(atPath: path, contents: nil, attributes: nil)
+        let dirPath = NSString(string: path).deletingLastPathComponent
+        if FileManager.default.fileExists(atPath: dirPath) == false {
+            try FileManager.default.createDirectory(atPath: dirPath, withIntermediateDirectories: true)
         }
         
         guard let file = fopen(path.cString(using: .utf8), "w".cString(using: .utf8)) else {

@@ -39,9 +39,7 @@ struct SourceReport: Codable {
     }
     
     var coverage: Int {
-        guard totalCount > 0 else {
-            return 0
-        }
+        precondition(totalCount > 0)
         return (totalCount - undocumented.count) * 100 / totalCount
     }
 }
@@ -58,9 +56,7 @@ struct CoverageReport: Codable {
     }
     
     var coverage: Int {
-        guard totalCount > 0 else {
-            return 0
-        }
+        precondition(totalCount > 0)
         return (totalCount - totalUndocumentedCount) * 100 / totalCount
     }
 }

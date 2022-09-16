@@ -45,7 +45,10 @@ fileprivate class Visitor: SyntaxVisitor {
         }
         
         let startLocation = decl.startLocation(converter: converter, afterLeadingTrivia: true)
-        let declaration = Declaration(decl: decl, context: context, line: startLocation.line ?? 0, column: startLocation.column ?? 0)
+        let declaration = Declaration(decl: decl,
+                                      context: context,
+                                      line: startLocation.line ?? 0,
+                                      column: startLocation.column ?? 0)
         declarations.append(declaration)
     }
    
@@ -172,14 +175,6 @@ struct Source {
     
     var undocumented: [Declaration] {
         declarations.filter { $0.hasDoc == false }
-    }
-    
-    var coverage: Int {
-        let count = declarations.count
-        guard count > 0 else {
-            return -1
-        }
-        return (count - undocumented.count) * 100 / count
     }
     
     private init(_ sourceFile: SourceFileSyntax, minAccessLevel: AccessLevel) throws {

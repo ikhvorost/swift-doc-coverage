@@ -25,7 +25,6 @@ import Foundation
 import ArgumentParser
 import SwiftDocCoverage
 
-// --report-style: text, warnings, json
 
 enum AccessLevelArgument: String, ExpressibleByArgument {
     case open, `public`, `internal`, `fileprivate`, `private`
@@ -78,11 +77,11 @@ struct SwiftDocCoverage: ParsableCommand {
         
         switch report {
         case .statistics:
-            try coverage.printStatistics()
+            try coverage.reportStatistics()
         case .warnings:
-            try coverage.printWarnings()
+            try coverage.reportWarnings()
         case .json:
-            try coverage.printJson()
+            try coverage.reportJson()
         }
     }
 }

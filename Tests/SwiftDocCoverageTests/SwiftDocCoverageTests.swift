@@ -310,9 +310,29 @@ final class DeclarationTests: XCTestCase {
         XCTAssert(source.declarations[8].accessLevel == .internal)
         XCTAssert(source.declarations[9].accessLevel == .fileprivate)
     }
+    
+    func test_min_access_level() throws {
+        let source = try Source(source: """
+        public class A {}
+        public struct B {}
+        internal class C {}
+        class D {}
+        fileprivate class E {}
+        private class F {}
+        """, minAccessLevel: .public)
+        XCTAssert(source.declarations.count == 2)
+        XCTAssert(source.declarations[0].name == "A")
+        XCTAssert(source.declarations[1].name == "B")
+    }
 }
 
 final class DocumentationTests: XCTestCase {
+    
+    func test_no_comments() throws {
+        let source = try Source(source: "public func eat(_ food: Food, quantity: Int) throws -> Int { return 0 }")
+        XCTAssert(source.declarations.count == 1)
+        XCTAssert(source.declarations[0].comments.count == 0)
+    }
     
     func test_comments() throws {
         let source = try Source(source: """
@@ -338,33 +358,64 @@ final class DocumentationTests: XCTestCase {
 
 final class FileTests: XCTestCase {
     
-    let fileURL = Bundle.module.url(forResource: "Rect", withExtension: "swift", subdirectory: "Resources/Rect")!
+    static let directoryURL = Bundle.module.url(forResource: "Resources", withExtension: nil, subdirectory: nil)!
+    static let fileURL =  directoryURL.appendingPathComponent("Rect/Rect.swift")
+    static let readmeURL =  directoryURL.appendingPathComponent("README.md")
+    static let emptyDirURL =  directoryURL.appendingPathComponent("Empty")
     
     func test_file() throws {
-        let source = try Source(fileURL: fileURL, minAccessLevel: .private)
+        let source = try Source(fileURL: Self.fileURL, minAccessLevel: .private)
         XCTAssert(source.declarations.count == 4)
     }
     
-    func test_scan_notfound() throws {
-        XCTAssertThrowsError(try Coverage(path: "NotFound")) { error in
+    func test_not_found() throws {
+        XCTAssertThrowsError(try Coverage(paths: [Self.directoryURL.appendingPathComponent("NotFound").path], minAccessLevel: .public)) { error in
             XCTAssert(error.localizedDescription == "Path not found.")
         }
     }
     
+    func test_not_swift_file() throws {
+        XCTAssertThrowsError(try Coverage(paths: [Self.readmeURL.path], minAccessLevel: .public)) { error in
+            XCTAssert(error.localizedDescription == "Not swift file.")
+        }
+    }
+    
+    func test_no_declarations() throws {
+        let coverage = try Coverage(paths: [Self.fileURL.path], minAccessLevel: .open)
+        XCTAssertThrowsError(try coverage.report()) { error in
+            XCTAssert(error.localizedDescription == "Declarations not found.")
+        }
+    }
+    
     func test_report() throws {
-        let coverage = try Coverage(path: fileURL.path, minAccessLevel: .public)
+        let coverage = try Coverage(paths: [Self.fileURL.path], minAccessLevel: .public)
         let report = try coverage.report()
         
         XCTAssert(report.totalCount == 4)
         XCTAssert(report.totalUndocumentedCount == 2)
         XCTAssert(report.sources.count == 1)
         
-        try coverage.printStatistics()
+        try coverage.reportStatistics()
+    }
+    
+    func test_empty_directory() throws {
+        XCTAssertThrowsError(try Coverage(paths: [Self.emptyDirURL.path], minAccessLevel: .public)) { error in
+            XCTAssert(error.localizedDescription == "Swift files not found.")
+        }
+    }
+    
+    func test_directory() throws {
+        let coverage = try Coverage(paths: [Self.directoryURL.path], minAccessLevel: .public)
+        let report = try coverage.report()
+        
+        XCTAssert(report.totalCount == 4)
+        XCTAssert(report.totalUndocumentedCount == 2)
+        print(report.sources.count == 1)
     }
     
     func test_warnings() throws {
-        let coverage = try Coverage(path: fileURL.path, minAccessLevel: .public)
-        try coverage.printWarnings()
+        let coverage = try Coverage(paths: [Self.fileURL.path], minAccessLevel: .public)
+        try coverage.reportWarnings()
     }
 }
 
@@ -440,16 +491,10 @@ final class ToolTests: XCTestCase {
         }
     }
     
-    func temporaryDirectory() throws -> URL {
-        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(ProcessInfo.processInfo.globallyUniqueString)
-        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
-        return url
-    }
-    
     func test_file_output() throws {
-        let tempDir = try temporaryDirectory()
-        let outputFileURL = tempDir.appendingPathComponent("report.txt")
-        defer { try? FileManager.default.removeItem(at: tempDir) }
+        let tempDirectory = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(ProcessInfo.processInfo.globallyUniqueString)
+        let outputFileURL = tempDirectory.appendingPathComponent("report.txt")
+        defer { try? FileManager.default.removeItem(at: tempDirectory) }
         
         let process = Process()
         let output = try process.run(swiftDocCoverageURL, arguments: [fileURL.path, "--output", outputFileURL.path])

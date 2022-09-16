@@ -44,13 +44,7 @@ class Declaration {
     lazy var accessLevel: AccessLevel = { decl.accessLevel }()
     
     lazy var comments: [Comment] = { decl.comments }()
-    lazy var docComment: String? = {
-        let text = comments
-            .compactMap { $0.isDoc ? $0.text : nil }
-            .joined(separator: "")
-        return text.isEmpty ? nil : text
-    }()
-    var hasDoc: Bool { docComment != nil }
+    lazy var hasDoc: Bool = { comments.contains { $0.isDoc } }()
     
     lazy var name: String = {
         let name = decl.id.refine()
