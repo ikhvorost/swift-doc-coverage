@@ -1,0 +1,20 @@
+name: Build
+
+on:
+  push:
+    branches: [ master, develop ]
+
+jobs:
+  build:
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: swift build -v
+    - name: Run tests
+      run: |
+        swift test --enable-code-coverage -v
+        xcrun llvm-cov export -format="lcov" .build/debug/swift-doc-coveragePackageTests.xctest/contents/macos/swift-doc-coveragePackageTests -instr-profile .build/debug/codecov/default.profdata -ignore-filename-regex='_CSwiftSyntax|SwiftDocCoverageTests|ArgumentParser|SwiftSyntaxParser|SwiftSyntax|ArgumentParserToolInfo' > info.lcov
+        bash <(curl -s https://codecov.io/bash)
