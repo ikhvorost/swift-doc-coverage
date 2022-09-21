@@ -1,6 +1,12 @@
 import XCTest
 @testable import SwiftDocCoverage
 
+func tempDirectory() -> URL {
+    let url = URL(fileURLWithPath: NSTemporaryDirectory())
+        .appendingPathComponent(ProcessInfo.processInfo.globallyUniqueString)
+    try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+    return url
+}
 
 final class DeclarationTests: XCTestCase {
     
@@ -399,7 +405,10 @@ final class FileTests: XCTestCase {
     }
     
     func test_empty_directory() throws {
-        XCTAssertThrowsError(try Coverage(paths: [Self.emptyDirURL.path], minAccessLevel: .public)) { error in
+        let tempDirectory = tempDirectory()
+        defer { try? FileManager.default.removeItem(at: tempDirectory) }
+        
+        XCTAssertThrowsError(try Coverage(paths: [tempDirectory.path], minAccessLevel: .public)) { error in
             XCTAssert(error.localizedDescription == "Swift files not found.")
         }
     }
@@ -492,7 +501,7 @@ final class ToolTests: XCTestCase {
     }
     
     func test_file_output() throws {
-        let tempDirectory = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(ProcessInfo.processInfo.globallyUniqueString)
+        let tempDirectory = tempDirectory()
         let outputFileURL = tempDirectory.appendingPathComponent("report.txt")
         defer { try? FileManager.default.removeItem(at: tempDirectory) }
         
