@@ -13,7 +13,7 @@ $(BUILD_DIR)/release/$(NAME): $(SOURCES)
 
 .PHONY: install
 install: $(BUILD_DIR)/release/$(NAME)
-	@install "$(BUILD_DIR)/release/$(NAME)" "$(BIN_DIR)"
+	@sudo install "$(BUILD_DIR)/release/$(NAME)" "$(BIN_DIR)"
 
 .PHONY: uninstall
 uninstall:
