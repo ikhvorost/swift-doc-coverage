@@ -87,7 +87,7 @@ public struct Coverage {
                 return
             }
             
-            let undocumented = source.undocumented.map { DeclarationReport(line: $0.line, column: $0.line, name: $0.name) }
+            let undocumented = source.undocumented.map { DeclarationReport(line: $0.line, column: $0.column, name: $0.name) }
             let sourceReport = SourceReport(path: url.path,
                                             totalCount: source.declarations.count,
                                             undocumented: undocumented)
@@ -126,7 +126,7 @@ public struct Coverage {
     public func reportWarnings() throws {
         try report { source in
             source.undocumented.forEach {
-                output.write("\(source.path):\($0.line):\($0.column): warning: No documentation.")
+                output.write("\(source.path):\($0.line):\($0.column): warning: No documentation for '\($0.name)'.")
             }
         }
     }

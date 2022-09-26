@@ -483,7 +483,7 @@ final class ToolTests: XCTestCase {
         let process = Process()
         let output = try process.run(swiftDocCoverageURL, arguments: [fileURL.path, "--report", "warnings"])
         XCTAssert(process.terminationStatus == EXIT_SUCCESS)
-        XCTAssert(output.contains("warning: No documentation."))
+        XCTAssert(output.contains("warning: No documentation for 'Rect.size'."))
     }
     
     func test_json() throws {
