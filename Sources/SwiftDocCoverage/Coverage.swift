@@ -28,7 +28,7 @@ extension String : LocalizedError {
     public var errorDescription: String? { self }
 }
 
-fileprivate func findFiles(path: String, extention: String) throws -> [URL]  {
+fileprivate func findFiles(path: String, ext: String) throws -> [URL]  {
     var isDirectory: ObjCBool = false
     guard FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory) else {
         throw "Path not found."
@@ -43,7 +43,7 @@ fileprivate func findFiles(path: String, extention: String) throws -> [URL]  {
                 guard let resourceValues = try? fileURL.resourceValues(forKeys: resourceKeys),
                       let isDirectory = resourceValues.isDirectory, !isDirectory,
                       let name = resourceValues.name,
-                      name.hasSuffix(extention)
+                      name.hasSuffix(ext)
                 else {
                     continue
                 }
@@ -54,7 +54,7 @@ fileprivate func findFiles(path: String, extention: String) throws -> [URL]  {
         return urls
     }
     
-    guard path.hasSuffix(extention) else {
+    guard path.hasSuffix(ext) else {
         throw "Not swift file."
     }
     let url = URL(fileURLWithPath: path)
@@ -66,8 +66,15 @@ public struct Coverage {
     let minAccessLevel: AccessLevel
     let output: Output
     
+    private let dateComponentsFormatter: DateComponentsFormatter = {
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .abbreviated
+        formatter.allowedUnits = [.hour, .minute, .second]
+        return formatter
+    }()
+    
     public init(paths: [String], minAccessLevel: AccessLevel, output: Output = TerminalOutput()) throws {
-        self.urls = try paths.flatMap { try findFiles(path: $0, extention: ".swift") }
+        self.urls = try paths.flatMap { try findFiles(path: $0, ext: ".swift") }
         guard urls.count > 0 else {
             throw "Swift files not found."
         }
@@ -75,13 +82,33 @@ public struct Coverage {
         self.output = output
     }
     
+    private func string(from timeInterval: TimeInterval) -> String {
+        guard var time = dateComponentsFormatter.string(from: timeInterval) else {
+            return ""
+        }
+        
+        guard let fraction = String(format: "%.3f", timeInterval).split(separator: ".").last, fraction != "000" else {
+            return time
+        }
+        let ms = ".\(fraction)"
+        
+        guard let range = time.range(of: "s") else {
+            return "\(time) 0\(ms)\("s")"
+        }
+            
+        time.insert(contentsOf: ms, at: range.lowerBound)
+        return time
+    }
+    
     @discardableResult
-    func report(_ body: ((SourceReport) -> Void)? = nil) throws -> CoverageReport {
+    func report(_ body: ((SourceReport, TimeInterval) -> Void)? = nil) throws -> CoverageReport {
         precondition(urls.count > 0)
         
         var sources = [SourceReport]()
         
         try urls.forEach { url in
+            let time = Date()
+            
             let source = try Source(fileURL: url, minAccessLevel: minAccessLevel)
             guard source.declarations.count > 0 else {
                 return
@@ -93,7 +120,7 @@ public struct Coverage {
                                             undocumented: undocumented)
             sources.append(sourceReport)
             
-            body?(sourceReport)
+            body?(sourceReport, -time.timeIntervalSinceNow)
         }
         
         guard sources.count > 0 else {
@@ -105,8 +132,11 @@ public struct Coverage {
     
     public func reportStatistics() throws {
         var i = 1
-        let report = try report() { source in
-            output.write("\(i)) \(source.path): \(source.coverage)% [\(source.totalCount - source.undocumented.count)/\(source.totalCount)]")
+        var time: TimeInterval = 0
+        let report = try report() { source, timeInterval in
+            time += timeInterval
+            
+            output.write("\(i)) \(source.path): \(source.coverage)% [\(source.totalCount - source.undocumented.count)/\(source.totalCount)] (\(string(from: timeInterval)))")
             
             if source.undocumented.count > 0 {
                 output.write("Undocumented:")
@@ -120,11 +150,11 @@ public struct Coverage {
             
             i += 1
         }
-        output.write("Total: \(report.coverage)% [\(report.totalCount - report.totalUndocumentedCount)/\(report.totalCount)]")
+        output.write("\nTotal: \(report.coverage)% [\(report.totalCount - report.totalUndocumentedCount)/\(report.totalCount)] (\(string(from: time)))")
     }
     
     public func reportWarnings() throws {
-        try report { source in
+        try report { source, _ in
             source.undocumented.forEach {
                 output.write("\(source.path):\($0.line):\($0.column): warning: No documentation for '\($0.name)'.")
             }
