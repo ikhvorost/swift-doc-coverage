@@ -10,7 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Code Coverage
-      run: ikvorost/swift-doc-coverage@develop
+      run: ./@develop
 #    - name: Build
 #      run: swift build -v
 #    - name: Run tests
