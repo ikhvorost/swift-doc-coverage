@@ -1,0 +1,21 @@
+name: "Swift Doc Coverage"
+description: "Documentation coverage command-line utility for Swift files."
+author: "Iurii Khvorost"
+
+inputs:
+  inputs:
+    description: "A path to a directory containing Swift (`.swift`) files in your workspace"
+    required: true
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - run: ${{ github.action_path }}/install.sh
+      shell: bash
+    - run: swift-doc-coverage "${{ inputs.inputs }}"
+      shell: bash
+
+branding:
+  icon: "book"
+  color: "orange"
