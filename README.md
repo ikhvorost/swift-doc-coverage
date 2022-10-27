@@ -7,7 +7,11 @@
 
 [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/donate/?hosted_button_id=TSPDD3ZAAH24C)
 
-# swift-doc-coverage
+<p align="center">
+<img src="swift-doc-coverage.png" alt="Swift Doc Coverage: Documentation coverage command-line utility for Swift files">
+</p>
+
+# Swift Doc Coverage
 
 `swift-doc-coverage` generates documentation coverage statistics or warnings for Swift files and can be used from the command-line on macOS.
 
