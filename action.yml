@@ -11,10 +11,12 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - run: ${{ github.action_path }}/install.sh
+    - run: echo ${{ inputs.inputs }}
       shell: bash
-    - run: swift-doc-coverage "${{ inputs.inputs }}"
-      shell: bash
+#    - run: ${{ github.action_path }}/install.sh
+#      shell: bash
+#    - run: swift-doc-coverage "${{ inputs.inputs }}"
+#      shell: bash
 
 branding:
   icon: "book"
