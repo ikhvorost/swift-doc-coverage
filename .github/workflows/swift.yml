@@ -9,10 +9,20 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v3
+
     - name: Code Coverage
       uses: ikhvorost/swift-doc-coverage@develop
       with:
         inputs: "Hello"
+
+    - name: Save art
+      run: echo "{message:'Hello'}" > test.json
+    - name: Upload json
+        uses: actions/upload-artifact@v3
+        with:
+          name: Test
+          path: test.json
+
 #    - name: Build
 #      run: swift build -v
 #    - name: Run tests
