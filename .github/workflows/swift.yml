@@ -17,11 +17,11 @@ jobs:
 
     - name: Save art
       run: echo "{message:'Hello'}" > test.json
-    - name: Upload json
-        uses: actions/upload-artifact@v3
-        with:
-          name: Test
-          path: test.json
+      
+    - uses: actions/upload-artifact@v3
+      with:
+        name: Test
+        path: test.json
 
 #    - name: Build
 #      run: swift build -v
