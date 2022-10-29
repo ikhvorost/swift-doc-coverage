@@ -16,9 +16,11 @@ runs:
 
     - name: Install
       shell: bash
-      run: cd ${{ github.action_path }} && ls
+      run: |
+        cd ${{ github.action_path }}
+        make install
+        swift-doc-coverage -v
       
-
 #    - run: npm i && node index.js
 #      shell: bash
 
