@@ -13,7 +13,7 @@ runs:
   steps:
     - run: echo ${{ inputs.inputs }}
       shell: bash
-    - run: npm i && node index.js
+    - run: node index.js
       shell: bash
 
 #    - run: ${{ github.action_path }}/install.sh
