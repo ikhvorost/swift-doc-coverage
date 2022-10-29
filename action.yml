@@ -19,8 +19,9 @@ runs:
       run: |
         echo $PWD
         cd ${{ github.action_path }}
-        cd ${{ runner.temp }}
+        cd -
         echo $PWD
+        ls
 
       
 #    - run: npm i && node action.js
