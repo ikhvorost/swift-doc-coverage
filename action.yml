@@ -13,7 +13,9 @@ runs:
   steps:
     - run: echo ${{ inputs.inputs }}
       shell: bash
-      
+    - run: npm i && node index.js
+      shell: bash
+
 #    - run: ${{ github.action_path }}/install.sh
 #      shell: bash
 #    - run: swift-doc-coverage "${{ inputs.inputs }}"

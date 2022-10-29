@@ -1,0 +1,20 @@
+{
+  "name": "swift-doc-coverage",
+  "version": "1.0.0",
+  "description": "Documentation coverage command-line utility for Swift files.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ikhvorost/swift-doc-coverage.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ikhvorost/swift-doc-coverage/issues"
+  },
+  "homepage": "https://github.com/ikhvorost/swift-doc-coverage#readme"
+}
