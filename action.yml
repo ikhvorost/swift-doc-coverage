@@ -11,10 +11,16 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - run: echo ${{ inputs.inputs }} && swift build
+#    - run: echo ${{ inputs.inputs }}
+#      shell: bash
+
+    - name: Install
       shell: bash
-    - run: npm i && node index.js
-      shell: bash
+      run: cd ${{ github.action_path }} && ls
+      
+
+#    - run: npm i && node index.js
+#      shell: bash
 
 #    - run: ${{ github.action_path }}/install.sh
 #      shell: bash
