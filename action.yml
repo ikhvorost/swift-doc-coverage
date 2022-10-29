@@ -19,8 +19,6 @@ runs:
       run: |
         echo $PWD
         cd ${{ github.action_path }}
-#        make install
-#        swift-doc-coverage -h
         cd ${{ runner.temp }}
         echo $PWD
 
