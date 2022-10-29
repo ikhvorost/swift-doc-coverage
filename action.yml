@@ -17,11 +17,15 @@ runs:
     - name: Install
       shell: bash
       run: |
+        echo $PWD
         cd ${{ github.action_path }}
-        make install
-        swift-doc-coverage -v
+#        make install
+#        swift-doc-coverage -h
+        cd ${{ runner.temp }}
+        echo $PWD
+
       
-#    - run: npm i && node index.js
+#    - run: npm i && node action.js
 #      shell: bash
 
 #    - run: ${{ github.action_path }}/install.sh
