@@ -1,7 +1,7 @@
 SHELL = /bin/bash
 
 BIN_DIR = /usr/local/bin
-NAME = $(shell basename $$PWD)
+NAME = 'swift-doc-coverage'
 BUILD_DIR = $(shell pwd)/.build
 SOURCES = $(wildcard Sources/**/*.swift)
 
