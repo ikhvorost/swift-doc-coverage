@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/ikhvorost/swift-doc-coverage/issues"
   },
-  "homepage": "https://github.com/ikhvorost/swift-doc-coverage#readme"
+  "homepage": "https://github.com/ikhvorost/swift-doc-coverage#readme",
+  "dependencies": {
+    "@actions/core": "^1.10.0"
+  }
 }
