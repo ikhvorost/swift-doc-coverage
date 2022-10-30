@@ -17,12 +17,14 @@ runs:
         key: ${{ runner.os }}-spm-${{ hashFiles('**/ikhvorost/swift-doc-coverage/Package.resolved') }}
         restore-keys: ${{ runner.os }}-spm-
 
-    - run: |
+    - shell: bash
+      run: |
         cd ${{ github.action_path }}
         make install
         cd -
     
-    - run: swift-doc-coverage ${{ inputs.inputs }}
+    - shell: bash
+      run: swift-doc-coverage ${{ inputs.inputs }}
       
 #    - run: npm i && node action.js
 #      shell: bash
