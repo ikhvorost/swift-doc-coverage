@@ -16,6 +16,7 @@ jobs:
 
 #    - name: Run tests
 #      run: swift test --enable-code-coverage
+
 #    - name: Code Coverage
 #      run: |
 #        xcrun llvm-cov export -format="lcov" .build/debug/swift-doc-coveragePackageTests.xctest/contents/macos/swift-doc-coveragePackageTests -instr-profile .build/debug/codecov/default.profdata -ignore-filename-regex='_CSwiftSyntax|SwiftDocCoverageTests|ArgumentParser|SwiftSyntaxParser|SwiftSyntax|ArgumentParserToolInfo' > info.lcov
