@@ -14,19 +14,15 @@ runs:
 #    - run: echo ${{ inputs.inputs }}
 #      shell: bash
 
-    - name: Install
-      shell: bash
+    -  shell: bash
       run: |
-        echo $PWD
         cd ${{ github.action_path }}
+        make install
         cd -
-        echo $PWD
-        ls
-
+        swift-doc-coverage ${{ inputs.inputs }}
       
 #    - run: npm i && node action.js
 #      shell: bash
-
 #    - run: ${{ github.action_path }}/install.sh
 #      shell: bash
 #    - run: swift-doc-coverage "${{ inputs.inputs }}"
