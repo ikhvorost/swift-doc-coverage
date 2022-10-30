@@ -11,15 +11,19 @@ inputs:
 runs:
   using: "composite"
   steps:
-#    - run: echo ${{ inputs.inputs }}
-#      shell: bash
+    - uses: actions/cache@v3
+        with:
+          path: ${{ github.action_path }}/.build
+          key: ${{ runner.os }}-spm-${{ hashFiles('**/ikhvorost/swift-doc-coverage/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
 
-    - shell: bash
-      run: |
+    - run: |
         cd ${{ github.action_path }}
         make install
         cd -
-        swift-doc-coverage ${{ inputs.inputs }}
+    
+    - run: swift-doc-coverage ${{ inputs.inputs }}
       
 #    - run: npm i && node action.js
 #      shell: bash
