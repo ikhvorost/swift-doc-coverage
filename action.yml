@@ -14,7 +14,7 @@ runs:
 #    - run: echo ${{ inputs.inputs }}
 #      shell: bash
 
-    -  shell: bash
+    - shell: bash
       run: |
         cd ${{ github.action_path }}
         make install
