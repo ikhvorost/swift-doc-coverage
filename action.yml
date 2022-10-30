@@ -19,10 +19,8 @@ runs:
         cd ${{ github.action_path }}
         make install
         cd -
+        swift-doc-coverage -h
 #        swift-doc-coverage ${{ inputs.inputs }}
-          swift-doc-coverage -h
-
-        Error: The loaded '_InternalSwiftSyntaxParser' library is from a toolchain that is not compatible with this version of SwiftSyntax
       
 #    - run: npm i && node action.js
 #      shell: bash
