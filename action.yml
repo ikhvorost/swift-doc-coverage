@@ -19,7 +19,8 @@ runs:
         cd ${{ github.action_path }}
         make install
         cd -
-        swift-doc-coverage ${{ inputs.inputs }}
+#        swift-doc-coverage ${{ inputs.inputs }}
+        swift-doc-coverage -h
       
 #    - run: npm i && node action.js
 #      shell: bash
