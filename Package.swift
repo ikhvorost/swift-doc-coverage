@@ -13,8 +13,8 @@ let package = Package(
         //.library(name: "SwiftDocCoverage", targets: ["SwiftDocCoverage"])
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-syntax.git", from: "0.50500.0"),
-        .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.1.3")
+        .package(url: "https://github.com/apple/swift-syntax.git", .exactItem("0.50600.0")),
+        .package(url: "https://github.com/apple/swift-argument-parser.git", .exactItem("1.1.3"))
     ],
     targets: [
         .executableTarget(
