@@ -14,7 +14,7 @@ runs:
     - uses: actions/cache@v3
       with:
         path: ${{ github.action_path }}/.build
-        key: ${{ runner.os }}-spm-${{ hashFiles('**/swift-doc-coverage/develop/Package.resolved') }}
+        key: ${{ runner.os }}-spm-${{ hashFiles('**/_actions/ikhvorost/swift-doc-coverage/develop/Package.resolved') }}
         restore-keys: ${{ runner.os }}-spm-
 
     - shell: bash
