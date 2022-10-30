@@ -16,10 +16,10 @@ runs:
 
     - shell: bash
       run: |
-        cd ${{ github.action_path }}
-        make install
-        cd -
-        swift-doc-coverage -h
+        swift --version
+#        cd ${{ github.action_path }}
+#        make install
+#        cd -
 #        swift-doc-coverage ${{ inputs.inputs }}
       
 #    - run: npm i && node action.js
