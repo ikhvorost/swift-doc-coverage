@@ -23,7 +23,7 @@ runs:
       run: make install
 
     - shell: bash
-      run: cd -
+      run: cd ${{ github.path }}
     
     - shell: bash
       run: swift-doc-coverage ${{ inputs.inputs }}
