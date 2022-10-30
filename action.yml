@@ -12,10 +12,10 @@ runs:
   using: "composite"
   steps:
     - uses: actions/cache@v3
-        with:
-          path: ${{ github.action_path }}/.build
-          key: ${{ runner.os }}-spm-${{ hashFiles('**/ikhvorost/swift-doc-coverage/develop/Package.resolved') }}
-          restore-keys: ${{ runner.os }}-spm-
+      with:
+        path: ${{ github.action_path }}/.build
+        key: ${{ runner.os }}-spm-${{ hashFiles('**/ikhvorost/swift-doc-coverage/Package.resolved') }}
+        restore-keys: ${{ runner.os }}-spm-
 
     - run: |
         cd ${{ github.action_path }}
