@@ -14,16 +14,11 @@ runs:
     - uses: actions/cache@v3
       with:
         path: ${{ github.action_path }}/.build
-        key: ${{ runner.os }}-spm-${{ hashFiles('**/_actions/ikhvorost/swift-doc-coverage/develop/Package.resolved') }}
-        restore-keys: |
-          ${{ runner.os }}-spm-
+        key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
 
     - shell: bash
       run: |
-        ls -a
-        echo "---"
         cd ${{ github.action_path }}
-        ls -a
         make install
         cd -
     
