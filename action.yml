@@ -16,14 +16,13 @@ runs:
 
     - shell: bash
       run: |
-        xcode-select -p
-        xcodebuild -version
-        
+#        xcode-select -p
+#        xcodebuild -version
 
-#        cd ${{ github.action_path }}
-#        make install
-#        cd -
-#        swift-doc-coverage ${{ inputs.inputs }}
+        cd ${{ github.action_path }}
+        make install
+        cd -
+        swift-doc-coverage ${{ inputs.inputs }}
       
 #    - run: npm i && node action.js
 #      shell: bash
