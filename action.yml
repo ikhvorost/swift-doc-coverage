@@ -20,10 +20,10 @@ runs:
 
     - shell: bash
       run: |
-        ls
+        ls -a
         echo "---"
         cd ${{ github.action_path }}
-        ls
+        ls -a
         make install
         cd -
     
