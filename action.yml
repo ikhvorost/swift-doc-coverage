@@ -11,16 +11,19 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - shell: bash
+      run: cd ${{ github.action_path }}
+
     - uses: actions/cache@v3
       with:
-        path: ${{ github.action_path }}/.build
-        key: ${{ runner.os }}-swift-doc-coverage-${{ hashFiles('**/Package.resolved') }}
+        path: .build
+        key: ${{ runner.os }}-swift-doc-coverage-${{ hashFiles('Package.resolved') }}
 
     - shell: bash
-      run: |
-        cd ${{ github.action_path }}
-        make install
-        cd -
+      run: make install
+
+    - shell: bash
+      run: cd -
     
     - shell: bash
       run: swift-doc-coverage ${{ inputs.inputs }}
