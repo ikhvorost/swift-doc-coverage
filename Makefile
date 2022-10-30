@@ -1,24 +1,26 @@
 SHELL = /bin/bash
 
 BIN_DIR = /usr/local/bin
-NAME = swift-doc-coverage
+TOOL_NAME = swift-doc-coverage
+LIB_NAME = lib_InternalSwiftSyntaxParser.dylib
 BUILD_DIR = $(shell pwd)/.build
 SOURCES = $(wildcard Sources/**/*.swift)
 
-$(BUILD_DIR)/release/$(NAME): $(SOURCES)
+$(BUILD_DIR)/release/$(TOOL_NAME): $(SOURCES)
 	@swift build \
 		-c release \
 		--disable-sandbox \
 		--build-path "$(BUILD_DIR)"
 
 .PHONY: install
-install: $(BUILD_DIR)/release/$(NAME)
-	@install -d $(BIN_DIR)
-	@install "$(BUILD_DIR)/release/$(NAME)" $(BIN_DIR)
+install: $(BUILD_DIR)/release/$(TOOL_NAME)
+	@install "$(BUILD_DIR)/release/$(TOOL_NAME)" $(BIN_DIR)
+	@install "$(BUILD_DIR)/release/$(LIB_NAME)" $(BIN_DIR)
 
 .PHONY: uninstall
 uninstall:
-	@rm -rf "$(BIN_DIR)/$(NAME)"
+	@rm -rf "$(BIN_DIR)/$(TOOL_NAME)"
+	@rm -rf "$(BIN_DIR)/$(LIB_NAME)"
 
 .PHONY: clean
 clean:

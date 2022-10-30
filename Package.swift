@@ -1,4 +1,4 @@
-// swift-tools-version: 5.7
+// swift-tools-version: 5.5
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -13,8 +13,8 @@ let package = Package(
         //.library(name: "SwiftDocCoverage", targets: ["SwiftDocCoverage"])
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-syntax.git", branch: "0.50700.1"),
-        .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.1.3")
+        .package(url: "https://github.com/apple/swift-syntax.git", from: "0.50700.1"),
+        .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.1.4")
     ],
     targets: [
         .executableTarget(
