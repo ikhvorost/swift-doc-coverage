@@ -16,21 +16,20 @@ runs:
 
     - uses: actions/cache@v3
       with:
-        path: .build
-        key: ${{ runner.os }}-swift-doc-coverage-${{ hashFiles('Package.resolved') }}
+        path: ${{ github.action_path }}/.build
+        key: ${{ runner.os }}-swift-doc-coverage-${{ hashFiles('**/ikhvorost/swift-doc-coverage/develop/Package.resolved') }}
 
     - shell: bash
-      run: make install
+      run: | 
+        cd ${{ github.action_path }}
+        make install
+        cd -
 
-    - shell: bash
-      run: cd ${{ github.workspace }}
-    
     - shell: bash
       run: swift-doc-coverage ${{ inputs.inputs }}
-      
+
 #    - run: npm i && node action.js
 #      shell: bash
-
 
 branding:
   icon: "book"

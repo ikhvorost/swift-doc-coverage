@@ -11,14 +11,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Cache
-        uses: actions/cache@v3
-        with:
-          path: .build
-          key: ${{ runner.os }}-spm-${{ hashFiles('Package.resolved') }}
+#      - name: Cache
+#        uses: actions/cache@v3
+#        with:
+#          path: .build
+#          key: ${{ runner.os }}-spm-${{ hashFiles('Package.resolved') }}
 
-      - name: Build
-        run: swift build
+#      - name: Build
+#        run: swift build
 
 #    - name: Run tests
 #      run: swift test --enable-code-coverage
