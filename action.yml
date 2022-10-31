@@ -11,12 +11,14 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - shell: bash
+    run: |
+      cp -r "${{ github.action_path }}/Package.resolved" "${{ github.workspace }}/swift-doc-coverage-hash"
+
     - uses: actions/cache@v3
-      env:
-        file: ${{ github.action_path }}/Package.resolved
       with:
         path: ${{ github.action_path }}/.build
-        key: ${{ runner.os }}-swift-doc-coverage-${{ hashFiles(env.file) }}
+        key: ${{ runner.os }}-swift-doc-coverage-${{ hashFiles("**/swift-doc-coverage-hash") }}
 
     - shell: bash
       run: | 
