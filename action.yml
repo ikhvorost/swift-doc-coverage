@@ -12,7 +12,7 @@ runs:
   using: "composite"
   steps:
     - shell: bash
-    run: |
+      run: |
       cp -r "${{ github.action_path }}/Package.resolved" "${{ github.workspace }}/swift-doc-coverage-hash"
 
     - uses: actions/cache@v3
