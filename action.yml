@@ -12,9 +12,11 @@ runs:
   using: "composite"
   steps:
     - uses: actions/cache@v3
+      env:
+        file: ${{ github.action_path }}/Package.resolved
       with:
         path: ${{ github.action_path }}/.build
-        key: ${{ runner.os }}-swift-doc-coverage-${{ hashFiles('**/ikhvorost/swift-doc-coverage/develop/Package.resolved') }}
+        key: ${{ runner.os }}-swift-doc-coverage-${{ hashFiles(env.file) }}
 
     - shell: bash
       run: | 
