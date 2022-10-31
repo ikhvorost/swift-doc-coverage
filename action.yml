@@ -23,10 +23,10 @@ runs:
         cd -
 
     - shell: bash
-      run: swift-doc-coverage ${{ inputs.inputs }}
+      run: |
+        swift-doc-coverage ${{ inputs.inputs }}
+#        npm i && node action.js
 
-#    - run: npm i && node action.js
-#      shell: bash
 
 branding:
   icon: "book"
