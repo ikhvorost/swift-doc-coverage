@@ -13,7 +13,7 @@ runs:
   steps:
     - shell: bash
       run: |
-      cp -r "${{ github.action_path }}/Package.resolved" "${{ github.workspace }}/swift-doc-coverage-hash"
+        cp -r "${{ github.action_path }}/Package.resolved" "${{ github.workspace }}/swift-doc-coverage-hash"
 
     - uses: actions/cache@v3
       with:
