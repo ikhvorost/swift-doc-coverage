@@ -11,6 +11,7 @@ inputs:
 runs:
   using: "composite"
   steps:
+    # Cache: Hashing files must be in the current workspace directory
     - shell: bash
       run: |
         cp -r "${{ github.action_path }}/Package.resolved" "${{ github.workspace }}/swift-doc-coverage-hash"
