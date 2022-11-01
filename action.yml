@@ -11,24 +11,23 @@ inputs:
 runs:
   using: "composite"
   steps:
-    # Action cache: Hashing files must be in the current workspace directory
     - shell: bash
       run: |
-        mkdir _cache
+        mkdir -p _cache/.build
         cp "${{ github.action_path }}/Package.resolved" '_cache/cache.lock'
 
     - uses: actions/cache@v3
       with:
         path: _cache/.build
-        key: ${{ runner.os }}-swift-doc-coverage-${{ hashFiles('**/cache.lock') }}
+        key: ${{ runner.os }}-swift-doc-coverage-${{ hashFiles('**/_cache/cache.lock') }}
 
     - shell: bash
       run: | 
-        cp -r '_cache/.build' "${{ github.action_path }}/.build" | true
+        mv '_cache/.build' "${{ github.action_path }}/.build"
         cd ${{ github.action_path }}
         make install
         cd -
-        mv "${{ github.action_path }}/.build" '_cache/.build'
+        mv -u "${{ github.action_path }}/.build" '_cache/.build'
 
     - shell: bash
       run: |
