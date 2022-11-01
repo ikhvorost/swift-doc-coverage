@@ -23,11 +23,9 @@ runs:
 
     - shell: bash
       run: | 
-#        mv '_cache/.build' "${{ github.action_path }}/.build"
         cd ${{ github.action_path }}
         make install
         cd -
-#        mv "${{ github.action_path }}/.build" '_cache/.build'
 
     # Run
     - shell: bash
