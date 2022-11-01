@@ -24,7 +24,7 @@ runs:
 
     - shell: bash
       run: | 
-        cp -r '_cache/.build' "${{ github.action_path }}/.build"
+        cp -r '_cache/.build' "${{ github.action_path }}/.build" | true
         cd ${{ github.action_path }}
         make install
         cd -
