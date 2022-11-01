@@ -27,7 +27,7 @@ runs:
         cd ${{ github.action_path }}
         make install
         cd -
-        mv -u "${{ github.action_path }}/.build" '_cache/.build'
+        mv "${{ github.action_path }}/.build" '_cache/.build'
 
     - shell: bash
       run: |
