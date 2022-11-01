@@ -9,6 +9,7 @@ SOURCES = $(wildcard Sources/**/*.swift)
 $(BUILD_DIR)/release/$(TOOL_NAME): $(SOURCES)
 	@swift build \
 		-c release \
+		--build-path '/Users/runner/work/swift-doc-coverage/swift-doc-coverage/_cache/.build'
 		--disable-sandbox
 
 .PHONY: install
