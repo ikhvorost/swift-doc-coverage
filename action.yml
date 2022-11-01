@@ -11,6 +11,7 @@ inputs:
 runs:
   using: "composite"
   steps:
+    # Build
     - shell: bash
       run: |
         mkdir -p _cache/.build
@@ -29,6 +30,7 @@ runs:
         cd -
         mv "${{ github.action_path }}/.build" '_cache/.build'
 
+    # Run
     - shell: bash
       run: |
         swift-doc-coverage ${{ inputs.inputs }}
