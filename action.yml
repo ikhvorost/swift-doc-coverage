@@ -14,18 +14,21 @@ runs:
     # Action cache: Hashing files must be in the current workspace directory
     - shell: bash
       run: |
-        cp -r "${{ github.action_path }}/Package.resolved" "${{ github.workspace }}/swift-doc-coverage-hash"
+        mkdir _cache
+        cp "${{ github.action_path }}/Package.resolved" '_cache/cache.lock'
 
     - uses: actions/cache@v3
       with:
-        path: ${{ github.action_path }}/.build
-        key: ${{ runner.os }}-swift-doc-coverage-${{ hashFiles('**/swift-doc-coverage-hash') }}
+        path: _cache/.build
+        key: ${{ runner.os }}-swift-doc-coverage-${{ hashFiles('**/cache.lock') }}
 
     - shell: bash
       run: | 
+        cp -r '_cache/.build' "${{ github.action_path }}/.build"
         cd ${{ github.action_path }}
         make install
         cd -
+        mv "${{ github.action_path }}/.build" '_cache/.build'
 
     - shell: bash
       run: |
