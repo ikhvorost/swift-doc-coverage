@@ -13,18 +13,17 @@ runs:
   steps:
     - shell: bash
       run: |
-        mkdir -p _cache/.build
-        cp "${{ github.action_path }}/Package.resolved" '_cache/cache.lock'
+        mkdir _action
+        cp -r ${{ github.action_path }} _action
 
     - uses: actions/cache@v3
       with:
-        path: _cache/.build
-        key: ${{ runner.os }}-swift-doc-coverage-${{ hashFiles('**/_cache/cache.lock') }}
+        path: _action/.build
+        key: ${{ runner.os }}-action-${{ hashFiles('**/_action/Package.resolved') }}
 
     - shell: bash
       run: | 
-        ls _cache/.build
-        cd ${{ github.action_path }}
+        cd _action
         make install
         cd -
 
