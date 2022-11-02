@@ -3,13 +3,13 @@ SHELL = /bin/bash
 BIN_DIR = /usr/local/bin
 TOOL_NAME = swift-doc-coverage
 LIB_NAME = lib_InternalSwiftSyntaxParser.dylib
-BUILD_DIR = .build
+BUILD_DIR = /Users/runner/work/swift-doc-coverage/swift-doc-coverage/_cache/.build
 SOURCES = $(wildcard Sources/**/*.swift)
 
 $(BUILD_DIR)/release/$(TOOL_NAME): $(SOURCES)
 	@swift build \
 		-c release \
-		--build-path '/Users/runner/work/swift-doc-coverage/swift-doc-coverage/_cache/.build' \
+		--build-path $(BUILD_DIR) \
 		--disable-sandbox
 
 .PHONY: install
