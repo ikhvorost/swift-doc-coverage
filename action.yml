@@ -22,7 +22,7 @@ runs:
         key: ${{ runner.os }}-action-${{ hashFiles('**/_action/Package.resolved') }}
 
     - shell: bash
-      run: | 
+      run: |
         cd _action
         make install
         cd -
