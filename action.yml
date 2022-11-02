@@ -20,6 +20,7 @@ runs:
         path: _action/.build
         key: ${{ runner.os }}-action-${{ hashFiles('**/_action/Package.resolved') }}
 
+    # Install
     - shell: bash
       run: |
         cd _action
