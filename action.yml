@@ -13,8 +13,7 @@ runs:
   steps:
     - shell: bash
       run: |
-        mkdir _action
-        cp -r ${{ github.action_path }} _action
+        cp -r "${{ github.action_path }}" _action
 
     - uses: actions/cache@v3
       with:
