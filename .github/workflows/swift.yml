@@ -11,14 +11,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-#      - name: Cache
-#        uses: actions/cache@v3
-#        with:
-#          path: .build
-#          key: ${{ runner.os }}-spm-${{ hashFiles('Package.resolved') }}
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: .build
+          key: ${{ runner.os }}-spm-${{ hashFiles('Package.resolved') }}
 
-#      - name: Build
-#        run: swift build
+      - name: Build
+        run: swift build
 
 #    - name: Run tests
 #      run: swift test --enable-code-coverage
@@ -28,7 +28,7 @@ jobs:
 #        xcrun llvm-cov export -format="lcov" .build/debug/swift-doc-coveragePackageTests.xctest/contents/macos/swift-doc-coveragePackageTests -instr-profile .build/debug/codecov/default.profdata -ignore-filename-regex='_CSwiftSyntax|SwiftDocCoverageTests|ArgumentParser|SwiftSyntaxParser|SwiftSyntax|ArgumentParserToolInfo' > info.lcov
 #        bash <(curl -s https://codecov.io/bash)
 
-      - name: Swift Doc Coverage
-        uses: ikhvorost/swift-doc-coverage@develop
-        with:
-          inputs: 'Sources'
+#      - name: Swift Doc Coverage
+#        uses: ikhvorost/swift-doc-coverage@develop
+#        with:
+#          inputs: 'Sources'
