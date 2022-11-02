@@ -16,15 +16,14 @@ runs:
         mkdir -p _cache/.build
         cp "${{ github.action_path }}/Package.resolved" '_cache/cache.lock'
 
-    # Cache
     - uses: actions/cache@v3
       with:
         path: _cache/.build
         key: ${{ runner.os }}-swift-doc-coverage-${{ hashFiles('**/_cache/cache.lock') }}
 
-    # Install
     - shell: bash
       run: | 
+        ls _cache/.build
         cd ${{ github.action_path }}
         make install
         cd -
