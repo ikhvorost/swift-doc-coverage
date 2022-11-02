@@ -17,6 +17,7 @@ jobs:
           path: .build
           key: ${{ runner.os }}-spm-${{ hashFiles('Package.resolved') }}
 
+      # Build
       - name: Build
         run: swift build
 
