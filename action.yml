@@ -11,9 +11,14 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - shell: bash
-      run: |
-        cp -r "${{ github.action_path }}" _action
+#    - shell: bash
+#      run: |
+#        cp -r "${{ github.action_path }}" _action
+
+    - uses: actions/checkout@v3
+      with:
+        repository: ikhvorost/swift-doc-coverage@develop
+        path: _action
 
     - uses: actions/cache@v3
       with:
