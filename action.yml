@@ -17,7 +17,8 @@ runs:
 
     - uses: actions/checkout@v3
       with:
-        repository: ikhvorost/swift-doc-coverage@develop
+        repository: ikhvorost/swift-doc-coverage
+        branch: develop
         path: _action
 
     - uses: actions/cache@v3
