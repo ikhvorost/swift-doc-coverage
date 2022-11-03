@@ -26,7 +26,7 @@ runs:
         path: |
           ${{ github.action_path }}/.build
           ${{ github.action_path }}/node_modules
-        key: ${{ runner.os }}-action-${{ hashFiles("**/_actoin/Package.resolved", "**/_action/package-lock.json") }}
+        key: ${{ runner.os }}-action-${{ hashFiles('**/_action/Package.resolved', '**/_action/package-lock.json') }}
 
     - shell: bash
       run: |
