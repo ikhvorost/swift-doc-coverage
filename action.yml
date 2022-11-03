@@ -8,36 +8,37 @@ inputs:
     required: true
     default: ""
 
+  token:
+        required: false
+        description: 'Personal access token (PAT) used to fetch the repository.'
+        default: ${{ github.token }}
+
 runs:
   using: "composite"
   steps:
-#    - shell: bash
-#      run: |
-#        cp -r "${{ github.action_path }}" _action
-
-    - uses: actions/checkout@v3
-      with:
-        repository: ikhvorost/swift-doc-coverage
-        branch: develop
-        path: _action
-
     - uses: actions/cache@v3
+      env:
+        spm: ${{ github.action_path }}/Package.resolved
+        node: ${{ github.action_path }}/package-lock.json
       with:
-        path: _action/.build
-        key: ${{ runner.os }}-action-${{ hashFiles('**/_action/Package.resolved') }}
+        path: |
+          ${{ github.action_path }}/.build
+          ${{ github.action_path }}/node_modules
+        key: ${{ runner.os }}-action-${{ hashFiles($spm, $node) }}
 
     # Install
     - shell: bash
       run: |
-        cd _action
+        cd ${{ github.action_path }}
         make install
+        npm install
         cd -
 
     # Run
     - shell: bash
       run: |
         swift-doc-coverage ${{ inputs.inputs }}
-#        npm i && node action.js
+        node ${{ github.action_path }}/action.js
 
 
 branding:
