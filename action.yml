@@ -24,7 +24,7 @@ runs:
         path: |
           ${{ github.action_path }}/.build
           ${{ github.action_path }}/node_modules
-        key: ${{ runner.os }}-action-${{ hashFiles($spm, $node) }}
+        key: ${{ runner.os }}-action-${{ hashFiles(spm, node) }}
 
     # Install
     - shell: bash
