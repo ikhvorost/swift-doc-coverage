@@ -41,7 +41,6 @@ runs:
       run: |
         touch .env  
         echo SDC_JSON=$(swift-doc-coverage ${{ inputs.inputs }} -r json) >> .env
-#        swift-doc-coverage ${{ inputs.inputs }} -r json
         node ${{ github.action_path }}/action.js
 
 
