@@ -18,8 +18,9 @@ runs:
   steps:
     - shell: bash
       run: |
-        cp -r "${{ github.action_path }}/Package.resolved" _action/Package.resolved
-        cp -r "${{ github.action_path }}/package-lock.json" _action/package-lock.json
+        mkdir _action
+        cp "${{ github.action_path }}/Package.resolved" _action/Package.resolved
+        cp "${{ github.action_path }}/package-lock.json" _action/package-lock.json
 
     - uses: actions/cache@v3
       with:
