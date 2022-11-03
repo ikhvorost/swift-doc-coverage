@@ -16,15 +16,17 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - shell: bash
+      run: |
+        cp -r "${{ github.action_path }}/Package.resolved" _action/Package.resolved
+        cp -r "${{ github.action_path }}/package-lock.json" _action/package-lock.json
+
     - uses: actions/cache@v3
-      env:
-        spm: ${{ github.action_path }}/Package.resolved
-        node: ${{ github.action_path }}/package-lock.json
       with:
         path: |
           ${{ github.action_path }}/.build
           ${{ github.action_path }}/node_modules
-        key: ${{ runner.os }}-action-${{ hashFiles(env.spm, env.node) }}
+        key: ${{ runner.os }}-action-${{ hashFiles("**/_actoin/Package.resolved", "**/_action/package-lock.json") }}
 
     - shell: bash
       run: |
