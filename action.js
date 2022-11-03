@@ -3,7 +3,15 @@ const core = require('@actions/core');
 
 console.log("Hello Node!");
 
+console.log(process.env.SDC_JSON);
 
+
+try {
+
+}
+catch (error) {
+  core.setFailed(error.message);
+}
 /*
 try {
     // `who-to-greet` input defined in action metadata file
