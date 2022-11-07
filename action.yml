@@ -16,31 +16,33 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - shell: bash
-      run: |
-        mkdir _action
-        cp "${{ github.action_path }}/Package.resolved" _action/Package.resolved
-        cp "${{ github.action_path }}/package-lock.json" _action/package-lock.json
+#    - shell: bash
+##      run: |
+ #       mkdir _action
+ #       cp "${{ github.action_path }}/Package.resolved" _action/Package.resolved
+ #       cp "${{ github.action_path }}/package-lock.json" _action/package-lock.json
 
-    - uses: actions/cache@v3
-      with:
-        path: |
-          ${{ github.action_path }}/.build
-          ${{ github.action_path }}/node_modules
-        key: ${{ runner.os }}-action-${{ hashFiles('**/_action/Package.resolved', '**/_action/package-lock.json') }}
+#    - uses: actions/cache@v3
+#      with:
+#        path: |
+#          ${{ github.action_path }}/.build
+#          ${{ github.action_path }}/node_modules
+#        key: ${{ runner.os }}-action-${{ hashFiles('**/_action/Package.resolved', '**/_action/package-lock.json') }}#
 
-    - shell: bash
-      run: |
-        cd ${{ github.action_path }}
-        make install
-        npm install
-        cd -
+#    - shell: bash
+#      run: |
+#        cd ${{ github.action_path }}
+#        make install
+#        npm install
+#        cd -
 
     # Run
     - shell: bash
       run: |
-        echo "SDC_JSON=$(swift-doc-coverage ${{ inputs.inputs }} -r json)" >> $GITHUB_ENV
+        npm install
+        echo "SDC_JSON='Hello JSON'" >> $GITHUB_ENV
         node ${{ github.action_path }}/action.js
+#        echo "SDC_JSON=$(swift-doc-coverage ${{ inputs.inputs }} -r json)" >> $GITHUB_ENV
 
 
 branding:
