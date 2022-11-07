@@ -1,9 +1,9 @@
 const core = require('@actions/core');
+const github = require('@actions/github');
 //const http = require('https');
 const fs = require('fs');
 
-//console.log(process.env.SDC_JSON);
-
+console.log("GH Token" " + github.token);
 
 try {
   const data = fs.readFileSync('result.json', 'utf8');
