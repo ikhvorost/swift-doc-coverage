@@ -29,17 +29,16 @@ runs:
 #          ${{ github.action_path }}/node_modules
 #        key: ${{ runner.os }}-action-${{ hashFiles('**/_action/Package.resolved', '**/_action/package-lock.json') }}#
 
-#    - shell: bash
-#      run: |
-#        cd ${{ github.action_path }}
+    - shell: bash
+      run: |
+        cd ${{ github.action_path }}
 #        make install
-#        npm install
-#        cd -
+        npm install
+        cd -
 
     # Run
     - shell: bash
       run: |
-        npm install
         echo "SDC_JSON='Hello JSON'" >> $GITHUB_ENV
         node ${{ github.action_path }}/action.js
 #        echo "SDC_JSON=$(swift-doc-coverage ${{ inputs.inputs }} -r json)" >> $GITHUB_ENV
