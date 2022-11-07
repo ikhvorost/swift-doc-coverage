@@ -1,15 +1,18 @@
 const core = require('@actions/core');
 //const http = require('https');
+const fs = require('fs');
 
-console.log(process.env.SDC_JSON);
+//console.log(process.env.SDC_JSON);
 
 
 try {
-
+  const data = fs.readFileSync('result.json', 'utf8');
+  console.log(data);
 }
 catch (error) {
   core.setFailed(error.message);
 }
+
 /*
 try {
     // `who-to-greet` input defined in action metadata file

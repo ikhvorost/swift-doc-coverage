@@ -32,13 +32,15 @@ runs:
     - shell: bash
       run: |
         cd ${{ github.action_path }}
+        make install
         npm install
         cd -
 
     # Run
     - shell: bash
       run: |
-        SDC_JSON=$(swift-doc-coverage ${{ inputs.inputs }} -r json) node ${{ github.action_path }}/action.js
+        swift-doc-coverage ${{ inputs.inputs }} -r json -o ./result.json
+        node ${{ github.action_path }}/action.js
 
 
 branding:
