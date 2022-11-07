@@ -38,8 +38,7 @@ runs:
     # Run
     - shell: bash
       run: |
-        SDC_JSON='Hello JSON'
-        node ${{ github.action_path }}/action.js
+        SDC_JSON='Hello JSON' node ${{ github.action_path }}/action.js
 #        echo "SDC_JSON=$(swift-doc-coverage ${{ inputs.inputs }} -r json)" >> $GITHUB_ENV
 
 
