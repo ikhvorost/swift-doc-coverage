@@ -38,7 +38,7 @@ runs:
     # Run
     - shell: bash
       run: |
-        echo "SDC_JSON='Hello JSON'" >> $GITHUB_ENV
+        SDC_JSON='Hello JSON'
         node ${{ github.action_path }}/action.js
 #        echo "SDC_JSON=$(swift-doc-coverage ${{ inputs.inputs }} -r json)" >> $GITHUB_ENV
 
