@@ -3,7 +3,7 @@ const github = require('@actions/github');
 //const http = require('https');
 const fs = require('fs');
 
-console.log("GH Token" " + github.token);
+console.log("GH Token: " + github.token);
 
 try {
   const data = fs.readFileSync('result.json', 'utf8');
