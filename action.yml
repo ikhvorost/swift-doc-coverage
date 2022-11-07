@@ -39,8 +39,7 @@ runs:
     # Run
     - shell: bash
       run: |
-        touch .env  
-        echo SDC_JSON=$(swift-doc-coverage ${{ inputs.inputs }} -r json) >> .env
+        echo "SDC_JSON=$(swift-doc-coverage ${{ inputs.inputs }} -r json)" >> $GITHUB_ENV
         node ${{ github.action_path }}/action.js
 
 
