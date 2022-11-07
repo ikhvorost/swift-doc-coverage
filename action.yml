@@ -32,7 +32,6 @@ runs:
     - shell: bash
       run: |
         cd ${{ github.action_path }}
-#        make install
         npm install
         cd -
 
