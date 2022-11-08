@@ -40,7 +40,7 @@ runs:
     - shell: bash
       run: |
         swift-doc-coverage ${{ inputs.inputs }} -r json -o ./result.json
-        node ${{ github.action_path }}/action.js
+        TOKEN="@{{ github.token }}" node ${{ github.action_path }}/action.js
 
 
 branding:
