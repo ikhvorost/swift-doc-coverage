@@ -79,7 +79,7 @@ try {
   }
 
   dlog.info('File:', file);
-  dlog.info('Token:', token);
+  dlog.info('Token:', token.substring(20));
   dlog.info('Repository:', repository);
 
   const persent = getPersent(file);
