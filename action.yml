@@ -37,8 +37,8 @@ runs:
     # Run
     - shell: bash
       run: |
-        swift-doc-coverage ${{ inputs.inputs }} -r json -o 'result.json'
-        TOKEN="${{ inputs.token }}" FILE='result.js' REPOSITORY="${{ github.repository }}" node ${{ github.action_path }}/action.js
+        swift-doc-coverage ${{ inputs.inputs }} -r json -o "${{ github.workspace }}/result.json"
+        TOKEN="${{ inputs.token }}" FILE="${{ github.workspace }}/result.json" REPOSITORY="${{ github.repository }}" node ${{ github.action_path }}/action.js
 
 
 branding:
