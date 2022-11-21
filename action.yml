@@ -6,12 +6,10 @@ inputs:
   inputs:
     description: "A path to a directory containing Swift (`.swift`) files in your workspace"
     required: true
-    default: ""
 
   token:
-        required: false
-        description: 'Personal access token (PAT) used to fetch the repository.'
-        default: ${{ github.token }}
+    required: true
+    description: 'Personal access token (PAT) used to fetch the repository.'
 
 runs:
   using: "composite"
@@ -40,7 +38,7 @@ runs:
     - shell: bash
       run: |
         swift-doc-coverage ${{ inputs.inputs }} -r json -o ./result.json
-        TOKEN="${{ inputs.token }}" FILE='result.json' REPOSITORY="${{ github.repository }}" node ${{ github.action_path }}/action.js
+        TOKEN="${{ inputs.token }}" FILE='result.js\\on' REPOSITORY="${{ github.repository }}" node ${{ github.action_path }}/action.js
 
 
 branding:
