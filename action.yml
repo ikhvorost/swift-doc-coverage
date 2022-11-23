@@ -16,15 +16,19 @@ runs:
   steps:
     - shell: bash
       run: |
-        mkdir _sdc
+        mkdir ./_sdc
         cp -r ${{ github.action_path }} ./_sdc
+        cd ./_sdc
+        ls
+        cd -
 
-    - uses: actions/cache@v3
-      with:
-        path: |
-          _sdc/.build
-          _sdc/node_modules
-        key: ${{ runner.os }}-action-${{ hashFiles('**/_sdc/Package.resolved', '**/_sdc/package-lock.json') }}#
+
+#    - uses: actions/cache@v3
+#      with:
+#        path: |
+#          _sdc/.build
+#          _sdc/node_modules
+#        key: ${{ runner.os }}-action-${{ hashFiles('**/_sdc/Package.resolved', '**/_sdc/package-lock.json') }}#
 
     - shell: bash
       run: |
