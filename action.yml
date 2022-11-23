@@ -16,12 +16,8 @@ runs:
   steps:
     - shell: bash
       run: |
-        cd ${{ github.action_path }}
-        ls
-        cd -
-
         mkdir _sdc
-        cp -rv ${{ github.action_path }} _sdc
+        cp -r ${{ github.action_path }}/* _sdc
         cd _sdc
         ls
         cd -
@@ -37,7 +33,6 @@ runs:
     - shell: bash
       run: |
         cd _sdc
-        ls
         make install
         npm install
         cd -
