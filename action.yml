@@ -16,9 +16,13 @@ runs:
   steps:
     - shell: bash
       run: |
-        mkdir ./_sdc
-        cp -r ${{ github.action_path }} ./_sdc
-        cd ./_sdc
+        cd ${{ github.action_path }}
+        ls
+        cd -
+
+        mkdir _sdc
+        cp -rf ${{ github.action_path }} _sdc
+        cd _sdc
         ls
         cd -
 
