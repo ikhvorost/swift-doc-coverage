@@ -21,7 +21,7 @@ runs:
         cd -
 
         mkdir _sdc
-        cp -rf ${{ github.action_path }} _sdc
+        cp -rv ${{ github.action_path }} _sdc
         cd _sdc
         ls
         cd -
