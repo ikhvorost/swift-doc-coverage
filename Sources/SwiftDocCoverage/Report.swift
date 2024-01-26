@@ -24,39 +24,39 @@
 import Foundation
 
 struct DeclarationReport: Codable {
-    let line: Int
-    let column: Int
-    let name: String
+  let line: Int
+  let column: Int
+  let name: String
 }
 
 struct SourceReport: Codable {
-    let path: String
-    let totalCount: Int
-    let undocumented: [DeclarationReport]
-    
-    var fileName: String {
-        NSString(string: path).lastPathComponent
-    }
-    
-    var coverage: Int {
-        precondition(totalCount > 0)
-        return (totalCount - undocumented.count) * 100 / totalCount
-    }
+  let path: String
+  let totalCount: Int
+  let undocumented: [DeclarationReport]
+  
+  var fileName: String {
+    NSString(string: path).lastPathComponent
+  }
+  
+  var coverage: Int {
+    precondition(totalCount > 0)
+    return (totalCount - undocumented.count) * 100 / totalCount
+  }
 }
 
 struct CoverageReport: Codable {
-    let sources: [SourceReport]
-    
-    var totalCount: Int {
-        sources.reduce(0) { $0 + $1.totalCount }
-    }
-    
-    var totalUndocumentedCount: Int {
-        sources.reduce(0) { $0 + $1.undocumented.count }
-    }
-    
-    var coverage: Int {
-        precondition(totalCount > 0)
-        return (totalCount - totalUndocumentedCount) * 100 / totalCount
-    }
+  let sources: [SourceReport]
+  
+  var totalCount: Int {
+    sources.reduce(0) { $0 + $1.totalCount }
+  }
+  
+  var totalUndocumentedCount: Int {
+    sources.reduce(0) { $0 + $1.undocumented.count }
+  }
+  
+  var coverage: Int {
+    precondition(totalCount > 0)
+    return (totalCount - totalUndocumentedCount) * 100 / totalCount
+  }
 }

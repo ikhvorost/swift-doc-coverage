@@ -25,40 +25,40 @@ import Foundation
 import SwiftSyntax
 
 fileprivate extension String {
-    
-    static let regexNewLine = try! NSRegularExpression(pattern: "\\n\\s+", options: [])
-    
-    func refine() -> String {
-        let range = NSRange(startIndex..., in: self)
-        return Self.regexNewLine.stringByReplacingMatches(in: self, options: [], range: range, withTemplate: " ")
-    }
- }
+  
+  static let regexNewLine = try! NSRegularExpression(pattern: "\\n\\s+", options: [])
+  
+  func refine() -> String {
+    let range = NSRange(startIndex..., in: self)
+    return Self.regexNewLine.stringByReplacingMatches(in: self, options: [], range: range, withTemplate: " ")
+  }
+}
 
 
 class Declaration {
-    let decl: DeclProtocol
-    let context: [DeclProtocol]
-    let line: Int
-    let column: Int
+  let decl: DeclProtocol
+  let context: [DeclProtocol]
+  let line: Int
+  let column: Int
+  
+  lazy var accessLevel: AccessLevel = { decl.accessLevel }()
+  
+  lazy var comments: [Comment] = { decl.comments }()
+  lazy var hasDoc: Bool = { comments.contains { $0.isDoc } }()
+  
+  lazy var name: String = {
+    let name = decl.id.refine()
+    let parent = context.map { $0.id }.joined(separator: ".")
     
-    lazy var accessLevel: AccessLevel = { decl.accessLevel }()
-    
-    lazy var comments: [Comment] = { decl.comments }()
-    lazy var hasDoc: Bool = { comments.contains { $0.isDoc } }()
-    
-    lazy var name: String = {
-        let name = decl.id.refine()
-        let parent = context.map { $0.id }.joined(separator: ".")
-        
-        return parent.isEmpty
-            ? name
-            : "\(parent).\(name)"
-    }()
-    
-    init(decl: DeclProtocol, context: [DeclProtocol], line: Int, column: Int) {
-        self.decl = decl
-        self.context = context
-        self.line = line
-        self.column = column
-    }
+    return parent.isEmpty
+    ? name
+    : "\(parent).\(name)"
+  }()
+  
+  init(decl: DeclProtocol, context: [DeclProtocol], line: Int, column: Int) {
+    self.decl = decl
+    self.context = context
+    self.line = line
+    self.column = column
+  }
 }

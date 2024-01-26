@@ -24,40 +24,40 @@
 import Foundation
 
 public class Output {
-    let stream: UnsafeMutablePointer<FILE>
-    
-    init(stream: UnsafeMutablePointer<FILE>) {
-        self.stream = stream
-    }
-    
-    func write(_ text: String, terminator: String = "\n") {
-        fputs(text, stream)
-        fputs(terminator, stream)
-    }
+  let stream: UnsafeMutablePointer<FILE>
+  
+  init(stream: UnsafeMutablePointer<FILE>) {
+    self.stream = stream
+  }
+  
+  func write(_ text: String, terminator: String = "\n") {
+    fputs(text, stream)
+    fputs(terminator, stream)
+  }
 }
 
 public class TerminalOutput: Output {
-    
-    public init() {
-        super.init(stream: Darwin.stdout)
-    }
+  
+  public init() {
+    super.init(stream: Darwin.stdout)
+  }
 }
 
 public class FileOutput: Output {
-    
-    public init(path: String) throws {
-        let dirPath = NSString(string: path).deletingLastPathComponent
-        if FileManager.default.fileExists(atPath: dirPath) == false {
-            try FileManager.default.createDirectory(atPath: dirPath, withIntermediateDirectories: true)
-        }
-        
-        guard let file = fopen(path.cString(using: .utf8), "w".cString(using: .utf8)) else {
-            throw "Can't open file."
-        }
-        super.init(stream: file)
+  
+  public init(path: String) throws {
+    let dirPath = NSString(string: path).deletingLastPathComponent
+    if FileManager.default.fileExists(atPath: dirPath) == false {
+      try FileManager.default.createDirectory(atPath: dirPath, withIntermediateDirectories: true)
     }
     
-    deinit {
-        fclose(stream)
+    guard let file = fopen(path.cString(using: .utf8), "w".cString(using: .utf8)) else {
+      throw "Can't open file."
     }
+    super.init(stream: file)
+  }
+  
+  deinit {
+    fclose(stream)
+  }
 }

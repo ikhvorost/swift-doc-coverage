@@ -27,63 +27,63 @@ import SwiftDocCoverage
 
 
 enum AccessLevelArgument: String, ExpressibleByArgument {
-    case open, `public`, `internal`, `fileprivate`, `private`
-    
-    var accessLevel: AccessLevel {
-        switch self {
-        case .open: return .open
-        case .public: return .public
-        case .internal: return .internal
-        case .fileprivate: return .fileprivate
-        case .private: return .private
-        }
+  case open, `public`, `internal`, `fileprivate`, `private`
+  
+  var accessLevel: AccessLevel {
+    switch self {
+      case .open: return .open
+      case .public: return .public
+      case .internal: return .internal
+      case .fileprivate: return .fileprivate
+      case .private: return .private
     }
+  }
 }
 
 enum ReportArgument: String, ExpressibleByArgument {
-    case statistics
-    case warnings
-    case json
+  case statistics
+  case warnings
+  case json
 }
 
 struct SwiftDocCoverage: ParsableCommand {
-    
-    static var configuration = CommandConfiguration(
-        abstract: "Generates documentation coverage statistics for Swift files.",
-        version: "1.0.0"
-    )
-    
-    @Argument(help: "One or more paths to a directory containing Swift files.")
-    var inputs: [String]
-    
-    @Option(name: .shortAndLong, help: "The minimum access level of the symbols considered for coverage statistics: \(AccessLevelArgument.open), \(AccessLevelArgument.public), \(AccessLevelArgument.internal), \(AccessLevelArgument.fileprivate), \(AccessLevelArgument.private).")
-    var minimumAccessLevel: AccessLevelArgument = .public
-    
-    @Option(name: .shortAndLong, help: "Report modes: \(ReportArgument.statistics.rawValue), \(ReportArgument.warnings.rawValue), \(ReportArgument.json.rawValue).")
-    var report: ReportArgument = .statistics
-    
-    @Option(name: .shortAndLong, help: "The file path for generated report.")
-    var output: String?
-    
-    mutating func run() throws {
-        var out: Output = TerminalOutput()
-        if let path = output {
-            out = try FileOutput(path: path)
-        }
-        
-        let coverage = try Coverage(paths: inputs,
-                                    minAccessLevel: minimumAccessLevel.accessLevel,
-                                    output: out)
-        
-        switch report {
-        case .statistics:
-            try coverage.reportStatistics()
-        case .warnings:
-            try coverage.reportWarnings()
-        case .json:
-            try coverage.reportJson()
-        }
+  
+  static var configuration = CommandConfiguration(
+    abstract: "Generates documentation coverage statistics for Swift files.",
+    version: "1.0.0"
+  )
+  
+  @Argument(help: "One or more paths to a directory containing Swift files.")
+  var inputs: [String]
+  
+  @Option(name: .shortAndLong, help: "The minimum access level of the symbols considered for coverage statistics: \(AccessLevelArgument.open), \(AccessLevelArgument.public), \(AccessLevelArgument.internal), \(AccessLevelArgument.fileprivate), \(AccessLevelArgument.private).")
+  var minimumAccessLevel: AccessLevelArgument = .public
+  
+  @Option(name: .shortAndLong, help: "Report modes: \(ReportArgument.statistics.rawValue), \(ReportArgument.warnings.rawValue), \(ReportArgument.json.rawValue).")
+  var report: ReportArgument = .statistics
+  
+  @Option(name: .shortAndLong, help: "The file path for generated report.")
+  var output: String?
+  
+  mutating func run() throws {
+    var out: Output = TerminalOutput()
+    if let path = output {
+      out = try FileOutput(path: path)
     }
+    
+    let coverage = try Coverage(paths: inputs,
+                                minAccessLevel: minimumAccessLevel.accessLevel,
+                                output: out)
+    
+    switch report {
+      case .statistics:
+        try coverage.reportStatistics()
+      case .warnings:
+        try coverage.reportWarnings()
+      case .json:
+        try coverage.reportJson()
+    }
+  }
 }
 
 SwiftDocCoverage.main()
