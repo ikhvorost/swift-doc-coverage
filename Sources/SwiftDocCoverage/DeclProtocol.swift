@@ -49,17 +49,13 @@ public enum AccessLevel: Int {
 
 protocol DeclProtocol: SyntaxProtocol {
     var id: String { get }
-    var modifiers: ModifierListSyntax? { get }
+  var modifiers: DeclModifierListSyntax? { get }
 }
 
 extension DeclProtocol {
     
     var comments: [Comment] {
-        guard let trivia = leadingTrivia else {
-            return []
-        }
-        
-        return trivia.compactMap {
+        return leadingTrivia.compactMap {
             switch $0 {
             case let .lineComment(text):
                 return Comment(kind: .line, text: text)
@@ -81,7 +77,7 @@ extension DeclProtocol {
         }
 
         for modifier in modifiers {
-            let name = modifier.withoutTrivia().description
+          let name = modifier.trimmed.description
             switch name {
             case "open":
                 return .open
@@ -101,97 +97,154 @@ extension DeclProtocol {
 
 // MARK: -
 
-extension TypealiasDeclSyntax: DeclProtocol {
+extension TypeAliasDeclSyntax: DeclProtocol {
+  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
+    nil
+  }
+  
     var id: String {
-        identifier.withoutTrivia().description
+      name.trimmed.description
     }
 }
 
-extension AssociatedtypeDeclSyntax: DeclProtocol {
+extension AssociatedTypeDeclSyntax: DeclProtocol {
+  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
+    nil
+  }
+  
     var id: String {
-        identifier.withoutTrivia().description
+      name.trimmed.description
     }
 }
 
 extension ClassDeclSyntax: DeclProtocol {
+  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
+    nil
+  }
+  
     var id: String {
-        let genericParameter = genericParameterClause?.withoutTrivia().description ?? ""
-        return "\(identifier.withoutTrivia())\(genericParameter)"
+        let genericParameter = genericParameterClause?.trimmed.description ?? ""
+      return "\(name.trimmed)\(genericParameter)"
     }
 }
 
 extension StructDeclSyntax: DeclProtocol {
+  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
+    nil
+  }
+  
     var id: String {
-        let genericParameter = genericParameterClause?.withoutTrivia().description ?? ""
-        return "\(identifier.withoutTrivia())\(genericParameter)"
+        let genericParameter = genericParameterClause?.trimmed.description ?? ""
+      return "\(name.trimmed)\(genericParameter)"
     }
 }
 
 extension ProtocolDeclSyntax: DeclProtocol {
+  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
+    nil
+  }
+  
     var id: String {
-        identifier.withoutTrivia().description
+      name.trimmed.description
     }
 }
 
 extension ExtensionDeclSyntax: DeclProtocol {
+  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
+    nil
+  }
+  
     var id: String {
-        extendedType.withoutTrivia().description
+        extendedType.trimmed.description
     }
 }
 
 extension FunctionDeclSyntax: DeclProtocol {
+  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
+    nil
+  }
+  
     var id: String {
-        let generic = genericParameterClause?.withoutTrivia().description ?? ""
-        return "\(identifier.withoutTrivia())\(generic)\(signature.withoutTrivia())"
+        let generic = genericParameterClause?.trimmed.description ?? ""
+      return "\(name.trimmed)\(generic)\(signature.trimmed)"
     }
 }
 
 extension InitializerDeclSyntax: DeclProtocol {
+  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
+    nil
+  }
+  
     var id: String {
-        let optionalMark = optionalMark?.withoutTrivia().description ?? ""
-        let generic = genericParameterClause?.withoutTrivia().description ?? ""
-        return "\(initKeyword.withoutTrivia())\(optionalMark)\(generic)\(parameters.withoutTrivia())"
+        let optionalMark = optionalMark?.trimmed.description ?? ""
+        let generic = genericParameterClause?.trimmed.description ?? ""
+      let parameters = genericParameterClause?.trimmed ?? .none
+      return "\(initKeyword.trimmed)\(optionalMark)\(generic)\(parameters)"
     }
 }
 
 extension SubscriptDeclSyntax: DeclProtocol {
+  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
+    nil
+  }
+  
     var id: String {
-        let generic = genericParameterClause?.withoutTrivia().description ?? ""
-        return "\(subscriptKeyword.withoutTrivia())\(generic)\(indices.withoutTrivia()) \(result.withoutTrivia())"
+        let generic = genericParameterClause?.trimmed.description ?? ""
+      return "\(subscriptKeyword.trimmed)\(generic)\(parameterClause.trimmed) \(returnClause.trimmed)"
     }
 }
 
 extension VariableDeclSyntax: DeclProtocol {
+  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
+    nil
+  }
+  
     var id: String {
-        bindings.map { $0.pattern.withoutTrivia().description }.joined(separator: ",")
-    }    
+        bindings.map { $0.pattern.trimmed.description }.joined(separator: ",")
+    }
 }
 
 extension EnumDeclSyntax: DeclProtocol {
+  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
+    nil
+  }
+  
     var id: String {
-        let generic = genericParameters?.withoutTrivia().description ?? ""
-        return "\(identifier.withoutTrivia().description)\(generic)"
+      let generic = genericParameterClause?.trimmed.description ?? ""
+      return "\(name.trimmed.description)\(generic)"
     }
 }
 
 extension EnumCaseDeclSyntax: DeclProtocol {
+  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
+    nil
+  }
+  
     var id: String {
         elements.map {
-            let name = $0.identifier.withoutTrivia().description
-            let associatedValue = $0.associatedValue?.withoutTrivia().description ?? ""
+          let name = $0.name.trimmed.description
+          let associatedValue = $0.parameterClause?.trimmed.description ?? ""
             return "\(name)\(associatedValue)"
         }.joined(separator: ",")
     }
 }
 
 extension OperatorDeclSyntax: DeclProtocol {
+  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
+    nil
+  }
+  
     var id: String {
-        "\(operatorKeyword.withoutTrivia()) \(identifier.withoutTrivia())"
+      "\(operatorKeyword.trimmed) \(name.trimmed)"
     }
 }
 
 extension PrecedenceGroupDeclSyntax: DeclProtocol {
+  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
+    nil
+  }
+  
     var id: String {
-        "\(precedencegroupKeyword.withoutTrivia()) \(identifier.withoutTrivia())"
+      "\(precedencegroupKeyword.trimmed) \(name.trimmed)"
     }
 }

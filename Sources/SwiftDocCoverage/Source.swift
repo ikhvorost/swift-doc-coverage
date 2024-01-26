@@ -23,7 +23,7 @@
 
 import Foundation
 import SwiftSyntax
-import SwiftSyntaxParser
+import SwiftParser
 
 
 fileprivate class Visitor: SyntaxVisitor {
@@ -35,7 +35,7 @@ fileprivate class Visitor: SyntaxVisitor {
     init(sourceFile: SourceFileSyntax, converter: SourceLocationConverter, minAccessLevel: AccessLevel) {
         self.converter = converter
         self.minAccessLevel = minAccessLevel
-        super.init()
+      super.init(viewMode: .sourceAccurate)
         walk(sourceFile)
     }
     
@@ -47,8 +47,8 @@ fileprivate class Visitor: SyntaxVisitor {
         let startLocation = decl.startLocation(converter: converter, afterLeadingTrivia: true)
         let declaration = Declaration(decl: decl,
                                       context: context,
-                                      line: startLocation.line ?? 0,
-                                      column: startLocation.column ?? 0)
+                                      line: startLocation.line,
+                                      column: startLocation.column)
         declarations.append(declaration)
     }
    
@@ -56,12 +56,12 @@ fileprivate class Visitor: SyntaxVisitor {
 
     // UnknownDeclSyntax
     
-    override func visit(_ node: TypealiasDeclSyntax) -> SyntaxVisitorContinueKind {
+  override func visit(_ node: TypeAliasDeclSyntax) -> SyntaxVisitorContinueKind {
         append(decl: node)
         return .skipChildren
     }
     
-    override func visit(_ node: AssociatedtypeDeclSyntax) -> SyntaxVisitorContinueKind {
+  override func visit(_ node: AssociatedTypeDeclSyntax) -> SyntaxVisitorContinueKind {
         append(decl: node)
         return .skipChildren
     }
@@ -178,18 +178,19 @@ struct Source {
     }
     
     private init(_ sourceFile: SourceFileSyntax, minAccessLevel: AccessLevel) throws {
-        let converter = SourceLocationConverter(file: "", tree: sourceFile)
+        let converter = SourceLocationConverter(fileName: "", tree: sourceFile)
         let visitor = Visitor(sourceFile: sourceFile, converter: converter, minAccessLevel: minAccessLevel)
         declarations = visitor.declarations
     }
     
     init(source: String, minAccessLevel: AccessLevel = .private) throws {
-        let sourceFile = try SyntaxParser.parse(source: source)
+        let sourceFile = Parser.parse(source: source)
         try self.init(sourceFile, minAccessLevel: minAccessLevel)
     }
     
     init(fileURL: URL, minAccessLevel: AccessLevel = .private) throws {
-        let sourceFile = try SyntaxParser.parse(fileURL)
-        try self.init(sourceFile, minAccessLevel: minAccessLevel)
+      let source = try String(contentsOf: fileURL)
+      let sourceFile = Parser.parse(source: source)
+      try self.init(sourceFile, minAccessLevel: minAccessLevel)
     }
 }
