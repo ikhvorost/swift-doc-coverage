@@ -49,7 +49,7 @@ public enum AccessLevel: Int {
 
 protocol DeclProtocol: SyntaxProtocol {
   var id: String { get }
-  var modifiers: DeclModifierListSyntax? { get }
+  var modifiers: DeclModifierListSyntax { get }
 }
 
 extension DeclProtocol {
@@ -72,10 +72,6 @@ extension DeclProtocol {
   }
   
   var accessLevel: AccessLevel {
-    guard let modifiers = modifiers else {
-      return .internal
-    }
-    
     for modifier in modifiers {
       let name = modifier.trimmed.description
       switch name {
@@ -98,30 +94,25 @@ extension DeclProtocol {
 // MARK: -
 
 extension TypeAliasDeclSyntax: DeclProtocol {
-  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
-    nil
-  }
-  
   var id: String {
     name.trimmed.description
   }
 }
 
 extension AssociatedTypeDeclSyntax: DeclProtocol {
-  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
-    nil
-  }
-  
   var id: String {
     name.trimmed.description
   }
 }
 
 extension ClassDeclSyntax: DeclProtocol {
-  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
-    nil
+  var id: String {
+    let genericParameter = genericParameterClause?.trimmed.description ?? ""
+    return "\(name.trimmed)\(genericParameter)"
   }
-  
+}
+
+extension ActorDeclSyntax: DeclProtocol {
   var id: String {
     let genericParameter = genericParameterClause?.trimmed.description ?? ""
     return "\(name.trimmed)\(genericParameter)"
@@ -129,10 +120,6 @@ extension ClassDeclSyntax: DeclProtocol {
 }
 
 extension StructDeclSyntax: DeclProtocol {
-  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
-    nil
-  }
-  
   var id: String {
     let genericParameter = genericParameterClause?.trimmed.description ?? ""
     return "\(name.trimmed)\(genericParameter)"
@@ -140,30 +127,18 @@ extension StructDeclSyntax: DeclProtocol {
 }
 
 extension ProtocolDeclSyntax: DeclProtocol {
-  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
-    nil
-  }
-  
   var id: String {
     name.trimmed.description
   }
 }
 
 extension ExtensionDeclSyntax: DeclProtocol {
-  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
-    nil
-  }
-  
   var id: String {
     extendedType.trimmed.description
   }
 }
 
 extension FunctionDeclSyntax: DeclProtocol {
-  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
-    nil
-  }
-  
   var id: String {
     let generic = genericParameterClause?.trimmed.description ?? ""
     return "\(name.trimmed)\(generic)\(signature.trimmed)"
@@ -171,23 +146,14 @@ extension FunctionDeclSyntax: DeclProtocol {
 }
 
 extension InitializerDeclSyntax: DeclProtocol {
-  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
-    nil
-  }
-  
   var id: String {
     let optionalMark = optionalMark?.trimmed.description ?? ""
     let generic = genericParameterClause?.trimmed.description ?? ""
-    let parameters = genericParameterClause?.trimmed ?? .none
-    return "\(initKeyword.trimmed)\(optionalMark)\(generic)\(parameters)"
+    return "\(initKeyword.trimmed)\(optionalMark)\(generic)\(signature.trimmed)"
   }
 }
 
 extension SubscriptDeclSyntax: DeclProtocol {
-  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
-    nil
-  }
-  
   var id: String {
     let generic = genericParameterClause?.trimmed.description ?? ""
     return "\(subscriptKeyword.trimmed)\(generic)\(parameterClause.trimmed) \(returnClause.trimmed)"
@@ -195,20 +161,12 @@ extension SubscriptDeclSyntax: DeclProtocol {
 }
 
 extension VariableDeclSyntax: DeclProtocol {
-  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
-    nil
-  }
-  
   var id: String {
     bindings.map { $0.pattern.trimmed.description }.joined(separator: ",")
   }
 }
 
 extension EnumDeclSyntax: DeclProtocol {
-  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
-    nil
-  }
-  
   var id: String {
     let generic = genericParameterClause?.trimmed.description ?? ""
     return "\(name.trimmed.description)\(generic)"
@@ -216,10 +174,6 @@ extension EnumDeclSyntax: DeclProtocol {
 }
 
 extension EnumCaseDeclSyntax: DeclProtocol {
-  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
-    nil
-  }
-  
   var id: String {
     elements.map {
       let name = $0.name.trimmed.description
@@ -229,21 +183,7 @@ extension EnumCaseDeclSyntax: DeclProtocol {
   }
 }
 
-extension OperatorDeclSyntax: DeclProtocol {
-  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
-    nil
-  }
-  
-  var id: String {
-    "\(operatorKeyword.trimmed) \(name.trimmed)"
-  }
-}
-
 extension PrecedenceGroupDeclSyntax: DeclProtocol {
-  var modifiers: SwiftSyntax.DeclModifierListSyntax? {
-    nil
-  }
-  
   var id: String {
     "\(precedencegroupKeyword.trimmed) \(name.trimmed)"
   }

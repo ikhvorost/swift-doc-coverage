@@ -78,6 +78,12 @@ fileprivate class Visitor: SyntaxVisitor {
     return .visitChildren
   }
   
+  override func visit(_ node: ActorDeclSyntax) -> SyntaxVisitorContinueKind {
+    append(decl: node)
+    context.append(node)
+    return .visitChildren
+  }
+  
   override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
     append(decl: node)
     context.append(node)
@@ -132,11 +138,6 @@ fileprivate class Visitor: SyntaxVisitor {
     return .skipChildren
   }
   
-  override func visit(_ node: OperatorDeclSyntax) -> SyntaxVisitorContinueKind {
-    append(decl: node)
-    return .skipChildren
-  }
-  
   override func visit(_ node: PrecedenceGroupDeclSyntax) -> SyntaxVisitorContinueKind {
     append(decl: node)
     return .skipChildren
@@ -147,6 +148,11 @@ fileprivate class Visitor: SyntaxVisitor {
   override func visitPost(_ node: ClassDeclSyntax) {
     let decl = context.popLast()
     assert(decl is ClassDeclSyntax)
+  }
+  
+  override func visitPost(_ node: ActorDeclSyntax) {
+    let decl = context.popLast()
+    assert(decl is ActorDeclSyntax)
   }
   
   override func visitPost(_ node: EnumDeclSyntax) {

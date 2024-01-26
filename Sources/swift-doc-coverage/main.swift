@@ -71,9 +71,7 @@ struct SwiftDocCoverage: ParsableCommand {
       out = try FileOutput(path: path)
     }
     
-    let coverage = try Coverage(paths: inputs,
-                                minAccessLevel: minimumAccessLevel.accessLevel,
-                                output: out)
+    let coverage = try Coverage(paths: inputs, minAccessLevel: minimumAccessLevel.accessLevel, output: out)
     
     switch report {
       case .statistics:

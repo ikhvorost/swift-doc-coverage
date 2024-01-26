@@ -49,10 +49,7 @@ class Declaration {
   lazy var name: String = {
     let name = decl.id.refine()
     let parent = context.map { $0.id }.joined(separator: ".")
-    
-    return parent.isEmpty
-    ? name
-    : "\(parent).\(name)"
+    return parent.isEmpty ? name : "\(parent).\(name)"
   }()
   
   init(decl: DeclProtocol, context: [DeclProtocol], line: Int, column: Int) {
