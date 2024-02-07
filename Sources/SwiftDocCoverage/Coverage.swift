@@ -28,7 +28,7 @@ extension String : LocalizedError {
   public var errorDescription: String? { self }
 }
 
-fileprivate func findFiles(path: String, ext: String) throws -> [URL]  {
+fileprivate func findFiles(path: String, ext: String, skipsHiddenFiles: Bool) throws -> [URL]  {
   var isDirectory: ObjCBool = false
   guard FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory) else {
     throw "Path not found."
@@ -38,7 +38,8 @@ fileprivate func findFiles(path: String, ext: String) throws -> [URL]  {
     var urls = [URL]()
     let url = URL(fileURLWithPath: path)
     let resourceKeys = Set<URLResourceKey>([.nameKey, .isDirectoryKey])
-    if let enumerator = FileManager.default.enumerator(at: url, includingPropertiesForKeys: [.isDirectoryKey]) {
+    let options: FileManager.DirectoryEnumerationOptions = skipsHiddenFiles ? [.skipsHiddenFiles] : []
+    if let enumerator = FileManager.default.enumerator(at: url, includingPropertiesForKeys: [.isDirectoryKey, .isHiddenKey], options: options) {
       for case let fileURL as URL in enumerator {
         guard let resourceValues = try? fileURL.resourceValues(forKeys: resourceKeys),
               let isDirectory = resourceValues.isDirectory, !isDirectory,
@@ -73,8 +74,8 @@ public struct Coverage {
     return formatter
   }()
   
-  public init(paths: [String], minAccessLevel: AccessLevel, output: Output = TerminalOutput()) throws {
-    self.urls = try paths.flatMap { try findFiles(path: $0, ext: ".swift") }
+  public init(paths: [String], skipsHiddenFiles: Bool = true, minAccessLevel: AccessLevel = .public, output: Output = TerminalOutput()) throws {
+    self.urls = try paths.flatMap { try findFiles(path: $0, ext: ".swift", skipsHiddenFiles: skipsHiddenFiles) }
     guard urls.count > 0 else {
       throw "Swift files not found."
     }

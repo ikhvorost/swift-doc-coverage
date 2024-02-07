@@ -413,13 +413,13 @@ final class FileTests: XCTestCase {
   }
   
   func test_not_found() throws {
-    XCTAssertThrowsError(try Coverage(paths: [Self.directoryURL.appendingPathComponent("NotFound").path], minAccessLevel: .public)) { error in
+    XCTAssertThrowsError(try Coverage(paths: [Self.directoryURL.appendingPathComponent("NotFound").path])) { error in
       XCTAssert(error.localizedDescription == "Path not found.")
     }
   }
   
   func test_not_swift_file() throws {
-    XCTAssertThrowsError(try Coverage(paths: [Self.readmeURL.path], minAccessLevel: .public)) { error in
+    XCTAssertThrowsError(try Coverage(paths: [Self.readmeURL.path])) { error in
       XCTAssert(error.localizedDescription == "Not swift file.")
     }
   }
@@ -432,7 +432,7 @@ final class FileTests: XCTestCase {
   }
   
   func test_report() throws {
-    let coverage = try Coverage(paths: [Self.fileURL.path], minAccessLevel: .public)
+    let coverage = try Coverage(paths: [Self.fileURL.path])
     let report = try coverage.report()
     
     XCTAssert(report.totalCount == 4)
@@ -446,13 +446,13 @@ final class FileTests: XCTestCase {
     let tempDirectory = tempDirectory()
     defer { try? FileManager.default.removeItem(at: tempDirectory) }
     
-    XCTAssertThrowsError(try Coverage(paths: [tempDirectory.path], minAccessLevel: .public)) { error in
+    XCTAssertThrowsError(try Coverage(paths: [tempDirectory.path])) { error in
       XCTAssert(error.localizedDescription == "Swift files not found.")
     }
   }
   
   func test_directory() throws {
-    let coverage = try Coverage(paths: [Self.directoryURL.path], minAccessLevel: .public)
+    let coverage = try Coverage(paths: [Self.directoryURL.path])
     let report = try coverage.report()
     
     XCTAssert(report.totalCount == 4)
@@ -461,10 +461,12 @@ final class FileTests: XCTestCase {
   }
   
   func test_warnings() throws {
-    let coverage = try Coverage(paths: [Self.fileURL.path], minAccessLevel: .public)
+    let coverage = try Coverage(paths: [Self.fileURL.path])
     try coverage.reportWarnings()
   }
 }
+
+#if !os(watchOS)
 
 extension Process {
   
@@ -552,3 +554,5 @@ final class ToolTests: XCTestCase {
     XCTAssert(text.contains("Total: 50%"))
   }
 }
+
+#endif
