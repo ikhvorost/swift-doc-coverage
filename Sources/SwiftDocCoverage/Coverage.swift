@@ -28,7 +28,7 @@ extension String : LocalizedError {
   public var errorDescription: String? { self }
 }
 
-fileprivate func findFiles(path: String, ext: String, skipsHiddenFiles: Bool) throws -> [URL]  {
+fileprivate func findFiles(path: String, ext: String, skipsHiddenFiles: Bool, ignoreFilenameRegex: String) throws -> [URL]  {
   var isDirectory: ObjCBool = false
   guard FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory) else {
     throw "Path not found."
@@ -36,6 +36,9 @@ fileprivate func findFiles(path: String, ext: String, skipsHiddenFiles: Bool) th
   
   if isDirectory.boolValue {
     var urls = [URL]()
+    
+    let regex: NSRegularExpression? = ignoreFilenameRegex.isEmpty ? nil : try NSRegularExpression(pattern: ignoreFilenameRegex)
+    
     let url = URL(fileURLWithPath: path)
     let resourceKeys = Set<URLResourceKey>([.nameKey, .isDirectoryKey])
     let options: FileManager.DirectoryEnumerationOptions = skipsHiddenFiles ? [.skipsHiddenFiles] : []
@@ -47,6 +50,15 @@ fileprivate func findFiles(path: String, ext: String, skipsHiddenFiles: Bool) th
               name.hasSuffix(ext)
         else {
           continue
+        }
+        
+        // Skip by regex
+        if let regex = regex {
+          let fileName = fileURL.lastPathComponent
+          let range = NSRange(location: 0, length: fileName.utf16.count)
+          if regex.firstMatch(in: fileName, range: range) != nil {
+            continue
+          }
         }
         
         urls.append(fileURL)
@@ -74,8 +86,10 @@ public struct Coverage {
     return formatter
   }()
   
-  public init(paths: [String], skipsHiddenFiles: Bool = true, minAccessLevel: AccessLevel = .public, output: Output = TerminalOutput()) throws {
-    self.urls = try paths.flatMap { try findFiles(path: $0, ext: ".swift", skipsHiddenFiles: skipsHiddenFiles) }
+  public init(paths: [String], skipsHiddenFiles: Bool = true, ignoreFilenameRegex: String = "", minAccessLevel: AccessLevel = .public, output: Output = TerminalOutput()) throws {
+    self.urls = try paths.flatMap {
+      try findFiles(path: $0, ext: ".swift", skipsHiddenFiles: skipsHiddenFiles, ignoreFilenameRegex: ignoreFilenameRegex)
+    }
     guard urls.count > 0 else {
       throw "Swift files not found."
     }

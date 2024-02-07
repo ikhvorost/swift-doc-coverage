@@ -59,6 +59,9 @@ struct SwiftDocCoverage: ParsableCommand {
   @Option(name: .shortAndLong, help: "An option to skip hidden files.")
   var skipsHiddenFiles: Bool = true
   
+  @Option(name: .shortAndLong, help: "Skip source code files with file paths that match the given regular expression.")
+  var ignoreFilenameRegex: String = ""
+  
   @Option(name: .shortAndLong, help: "The minimum access level of the symbols considered for coverage statistics: \(AccessLevelArgument.open), \(AccessLevelArgument.public), \(AccessLevelArgument.internal), \(AccessLevelArgument.fileprivate), \(AccessLevelArgument.private).")
   var minimumAccessLevel: AccessLevelArgument = .public
   
@@ -74,7 +77,12 @@ struct SwiftDocCoverage: ParsableCommand {
       out = try FileOutput(path: path)
     }
     
-    let coverage = try Coverage(paths: inputs, skipsHiddenFiles: skipsHiddenFiles, minAccessLevel: minimumAccessLevel.accessLevel, output: out)
+    let coverage = try Coverage(
+      paths: inputs,
+      skipsHiddenFiles: skipsHiddenFiles,
+      ignoreFilenameRegex: ignoreFilenameRegex,
+      minAccessLevel: minimumAccessLevel.accessLevel,
+      output: out)
     
     switch report {
       case .statistics:
