@@ -26,11 +26,11 @@ import SwiftSyntax
 
 fileprivate extension String {
   
-  static let regexNewLine = try! NSRegularExpression(pattern: "\\n\\s+", options: [])
+  static let regexNewLine = try! NSRegularExpression(pattern: #"\n\s*"#, options: [])
   
   func refine() -> String {
     let range = NSRange(startIndex..., in: self)
-    return Self.regexNewLine.stringByReplacingMatches(in: self, options: [], range: range, withTemplate: " ")
+    return Self.regexNewLine.stringByReplacingMatches(in: self, options: [], range: range, withTemplate: "")
   }
 }
 

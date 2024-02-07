@@ -45,10 +45,7 @@ fileprivate class Visitor: SyntaxVisitor {
     }
     
     let startLocation = decl.startLocation(converter: converter, afterLeadingTrivia: true)
-    let declaration = Declaration(decl: decl,
-                                  context: context,
-                                  line: startLocation.line,
-                                  column: startLocation.column)
+    let declaration = Declaration(decl: decl, context: context, line: startLocation.line, column: startLocation.column)
     declarations.append(declaration)
   }
   
@@ -139,6 +136,11 @@ fileprivate class Visitor: SyntaxVisitor {
   }
   
   override func visit(_ node: PrecedenceGroupDeclSyntax) -> SyntaxVisitorContinueKind {
+    append(decl: node)
+    return .skipChildren
+  }
+  
+  override func visit(_ node: MacroDeclSyntax) -> SyntaxVisitorContinueKind {
     append(decl: node)
     return .skipChildren
   }

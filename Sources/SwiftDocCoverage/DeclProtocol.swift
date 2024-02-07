@@ -48,12 +48,21 @@ public enum AccessLevel: Int {
 }
 
 protocol DeclProtocol: SyntaxProtocol {
-  var id: String { get }
+  
+  // `attributes`: ``AttributeListSyntax``
   var modifiers: DeclModifierListSyntax { get }
+  // `classKeyword`: `'class'`
+  //var name: TokenSyntax { get }
+  // `genericParameterClause`: ``GenericParameterClauseSyntax``?
+  // `inheritanceClause`: ``InheritanceClauseSyntax``?
+  // `genericWhereClause`: ``GenericWhereClauseSyntax``?
+  // `memberBlock`: ``MemberBlockSyntax``
+
+  var id: String { get }
 }
 
 extension DeclProtocol {
-  
+
   var comments: [Comment] {
     return leadingTrivia.compactMap {
       switch $0 {
@@ -136,6 +145,10 @@ extension ExtensionDeclSyntax: DeclProtocol {
   var id: String {
     extendedType.trimmed.description
   }
+  
+  var name: TokenSyntax {
+    TokenSyntax(.identifier(extendedType.trimmedDescription), presence: .present)
+  }
 }
 
 extension FunctionDeclSyntax: DeclProtocol {
@@ -186,5 +199,12 @@ extension EnumCaseDeclSyntax: DeclProtocol {
 extension PrecedenceGroupDeclSyntax: DeclProtocol {
   var id: String {
     "\(precedencegroupKeyword.trimmed) \(name.trimmed)"
+  }
+}
+
+extension MacroDeclSyntax: DeclProtocol {
+  var id: String {
+    let generic = genericParameterClause?.trimmed.description ?? ""
+    return "\(name.trimmed)\(generic)\(signature.trimmed)"
   }
 }
