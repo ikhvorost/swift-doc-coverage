@@ -1,6 +1,6 @@
-//  Declaration.swift
+//  AccessLevel.swift
 //
-//  Created by Iurii Khvorost <iurii.khvorost@gmail.com> on 09.08.2022.
+//  Created by Iurii Khvorost <iurii.khvorost@gmail.com> on 11.02.2022.
 //  Copyright © 2022 Iurii Khvorost. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,41 +21,38 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-import Foundation
 import SwiftSyntax
 
-fileprivate extension String {
+
+public enum AccessLevel: Int {
+  case `open`
+  case `public`
+  case `internal`
+  case `fileprivate`
+  case `private`
   
-  static let regexNewLine = try! NSRegularExpression(pattern: #"\n\s*"#, options: [])
-  
-  func refine() -> String {
-    let range = NSRange(startIndex..., in: self)
-    return Self.regexNewLine.stringByReplacingMatches(in: self, options: [], range: range, withTemplate: "")
+  init?(token: TokenSyntax) {
+    guard case .keyword(let keyword) = token.tokenKind else {
+      return nil
+    }
+    
+    switch keyword {
+      case .open: self = .open
+      case .public: self = .public
+      case .internal: self = .internal
+      case .fileprivate: self = .fileprivate
+      case .private: self = .private
+      default: return nil
+    }
   }
-}
-
-
-class Declaration {
-  let decl: DeclProtocol
-  let context: [DeclProtocol]
-  let line: Int
-  let column: Int
   
-  lazy var accessLevel: AccessLevel = { decl.accessLevel }()
-  
-  lazy var comments: [Comment] = { decl.comments }()
-  lazy var hasDoc: Bool = { comments.contains { $0.isDoc } }()
-  
-  lazy var name: String = {
-    let name = decl.id.refine()
-    let parent = context.map { $0.id }.joined(separator: ".")
-    return parent.isEmpty ? name : "\(parent).\(name)"
-  }()
-  
-  init(decl: DeclProtocol, context: [DeclProtocol], location: SourceLocation) {
-    self.decl = decl
-    self.context = context
-    self.line = location.line
-    self.column = location.column
+  init(modifiers: DeclModifierListSyntax) {
+    for modifier in modifiers {
+      if let accessLevel = AccessLevel(token: modifier.name) {
+        self = accessLevel
+        return
+      }
+    }
+    self = .internal
   }
 }

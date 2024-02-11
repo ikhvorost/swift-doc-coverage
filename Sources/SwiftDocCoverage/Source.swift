@@ -45,7 +45,7 @@ fileprivate class Visitor: SyntaxVisitor {
     }
     
     let startLocation = decl.startLocation(converter: converter, afterLeadingTrivia: true)
-    let declaration = Declaration(decl: decl, context: context, line: startLocation.line, column: startLocation.column)
+    let declaration = Declaration(decl: decl, context: context, location: startLocation)
     declarations.append(declaration)
   }
   
