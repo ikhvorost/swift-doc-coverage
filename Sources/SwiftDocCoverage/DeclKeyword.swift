@@ -65,7 +65,7 @@ enum DeclKeyword: String {
       case .`init`: self = .`init`
       case .let: self = .let
       case .macro: self = .macro
-      case .operator: self = .operator
+      //case .operator:
       case .precedencegroup: self = .precedencegroup
       case .protocol: self = .protocol
       case .struct: self = .struct

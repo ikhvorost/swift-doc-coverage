@@ -20,9 +20,9 @@ final class DeclarationTests: XCTestCase {
     """
     let source = try Source(source: code)
     XCTAssert(source.declarations.count == 3)
-    XCTAssert(source.declarations[0].name == "SSN")
-    XCTAssert(source.declarations[1].name == "Audio")
-    XCTAssert(source.declarations[2].name == "Audio.AudioSample")
+    XCTAssert(source.declarations[0].name == "typealias SSN")
+    XCTAssert(source.declarations[1].name == "class Audio")
+    XCTAssert(source.declarations[2].name == "typealias Audio.AudioSample")
   }
   
   func test_associatedtype() throws {
@@ -36,10 +36,10 @@ final class DeclarationTests: XCTestCase {
     """
     let source = try Source(source: code)
     XCTAssert(source.declarations.count == 4)
-    XCTAssert(source.declarations[0].name == "Container")
-    XCTAssert(source.declarations[1].name == "Container.Item")
-    XCTAssert(source.declarations[2].name == "Container.Element")
-    XCTAssert(source.declarations[3].name == "Container.Suffix")
+    XCTAssert(source.declarations[0].name == "protocol Container")
+    XCTAssert(source.declarations[1].name == "associatedtype Container.Item")
+    XCTAssert(source.declarations[2].name == "associatedtype Container.Element: Equatable")
+    XCTAssert(source.declarations[3].name == "associatedtype Container.Suffix: SuffixableContainer where Suffix.Item == Item")
   }
   
   func test_if_endif() throws {
@@ -61,11 +61,11 @@ final class DeclarationTests: XCTestCase {
     """
     let source = try Source(source: code)
     XCTAssert(source.declarations.count == 5)
-    XCTAssert(source.declarations[0].name == "A")
-    XCTAssert(source.declarations[1].name == "B")
-    XCTAssert(source.declarations[2].name == "C")
-    XCTAssert(source.declarations[3].name == "D")
-    XCTAssert(source.declarations[4].name == "E")
+    XCTAssert(source.declarations[0].name == "class A")
+    XCTAssert(source.declarations[1].name == "class B")
+    XCTAssert(source.declarations[2].name == "class C")
+    XCTAssert(source.declarations[3].name == "class D")
+    XCTAssert(source.declarations[4].name == "class E")
   }
   
   func test_class_actor() throws {
@@ -74,14 +74,16 @@ final class DeclarationTests: XCTestCase {
     class Vehicle {}
     class Bicycle: Vehicle {}
     class Stack<Element> {}
+    class Stack<Element>: Base {}
     actor UserStorage {}
     """
     let source = try Source(source: code)
-    XCTAssert(source.declarations.count == 4)
-    XCTAssert(source.declarations[0].name == "Vehicle")
-    XCTAssert(source.declarations[1].name == "Bicycle")
-    XCTAssert(source.declarations[2].name == "Stack<Element>")
-    XCTAssert(source.declarations[3].name == "UserStorage")
+    XCTAssert(source.declarations.count == 5)
+    XCTAssert(source.declarations[0].name == "class Vehicle")
+    XCTAssert(source.declarations[1].name == "class Bicycle: Vehicle")
+    XCTAssert(source.declarations[2].name == "class Stack<Element>")
+    XCTAssert(source.declarations[3].name == "class Stack<Element>: Base")
+    XCTAssert(source.declarations[4].name == "actor UserStorage")
   }
   
   func test_struct() throws {
@@ -93,9 +95,9 @@ final class DeclarationTests: XCTestCase {
     """
     let source = try Source(source: code)
     XCTAssert(source.declarations.count == 3)
-    XCTAssert(source.declarations[0].name == "Book")
-    XCTAssert(source.declarations[1].name == "Person")
-    XCTAssert(source.declarations[2].name == "Stack<Element>")
+    XCTAssert(source.declarations[0].name == "struct Book")
+    XCTAssert(source.declarations[1].name == "struct Person: FullyNamed")
+    XCTAssert(source.declarations[2].name == "struct Stack<Element>")
   }
   
   func test_protocol() throws {
@@ -108,10 +110,10 @@ final class DeclarationTests: XCTestCase {
     """
     let source = try Source(source: code)
     XCTAssert(source.declarations.count == 4)
-    XCTAssert(source.declarations[0].name == "Container")
-    XCTAssert(source.declarations[1].name == "InheritingProtocol")
-    XCTAssert(source.declarations[2].name == "SomeClassOnlyProtocol")
-    XCTAssert(source.declarations[3].name == "CounterDataSource")
+    XCTAssert(source.declarations[0].name == "protocol Container")
+    XCTAssert(source.declarations[1].name == "protocol InheritingProtocol: SomeProtocol, AnotherProtocol")
+    XCTAssert(source.declarations[2].name == "protocol SomeClassOnlyProtocol: AnyObject, SomeInheritedProtocol")
+    XCTAssert(source.declarations[3].name == "protocol CounterDataSource")
   }
   
   func test_extention() throws {
@@ -123,9 +125,9 @@ final class DeclarationTests: XCTestCase {
     """
     let source = try Source(source: code)
     XCTAssert(source.declarations.count == 3)
-    XCTAssert(source.declarations[0].name == "Container")
-    XCTAssert(source.declarations[1].name == "SomeType")
-    XCTAssert(source.declarations[2].name == "Array")
+    XCTAssert(source.declarations[0].name == "extension Container")
+    XCTAssert(source.declarations[1].name == "extension SomeType: SomeProtocol, AnotherProtocol")
+    XCTAssert(source.declarations[2].name == "extension Array: TextRepresentable where Element: TextRepresentable")
   }
   
   func test_function() throws {
@@ -142,13 +144,13 @@ final class DeclarationTests: XCTestCase {
     """
     let source = try Source(source: code)
     XCTAssert(source.declarations.count == 7)
-    XCTAssert(source.declarations[0].name == "greet(person: String) -> String")
-    XCTAssert(source.declarations[1].name == "someFunction(argumentLabel parameterName: Int)")
-    XCTAssert(source.declarations[2].name == "arithmeticMean(_ numbers: Double...) -> Double")
-    XCTAssert(source.declarations[3].name == "swapTwoValues<T>(_ a: inout T, _ b: inout T)")
-    XCTAssert(source.declarations[4].name == "CompassPoint")
-    XCTAssert(source.declarations[5].name == "CompassPoint.turnNorth()")
-    XCTAssert(source.declarations[6].name == "CompassPoint.+(left: Vector2D, right: Vector2D) -> Vector2D")
+    XCTAssert(source.declarations[0].name == "func greet(person: String) -> String")
+    XCTAssert(source.declarations[1].name == "func someFunction(argumentLabel parameterName: Int)")
+    XCTAssert(source.declarations[2].name == "func arithmeticMean(_ numbers: Double...) -> Double")
+    XCTAssert(source.declarations[3].name == "func swapTwoValues<T>(_ a: inout T, _ b: inout T)")
+    XCTAssert(source.declarations[4].name == "enum CompassPoint")
+    XCTAssert(source.declarations[5].name == "func CompassPoint.turnNorth()")
+    XCTAssert(source.declarations[6].name == "func CompassPoint.+(left: Vector2D, right: Vector2D) -> Vector2D")
   }
   
   func test_initializer() throws {
@@ -161,17 +163,19 @@ final class DeclarationTests: XCTestCase {
       init(_ celsius: Double) {}
       init?(species: String) {}
       init<Item>(item: Item) {}
+      init<Item>(item: Item) where Element: TextRepresentable {}
     }
     """
     let source = try Source(source: code)
-    XCTAssert(source.declarations.count == 7)
-    XCTAssert(source.declarations[0].name == "Color")
+    XCTAssert(source.declarations.count == 8)
+    XCTAssert(source.declarations[0].name == "struct Color")
     XCTAssert(source.declarations[1].name == "Color.init()")
     XCTAssert(source.declarations[2].name == "Color.init()")
     XCTAssert(source.declarations[3].name == "Color.init(fromFahrenheit fahrenheit: Double)")
     XCTAssert(source.declarations[4].name == "Color.init(_ celsius: Double)")
     XCTAssert(source.declarations[5].name == "Color.init?(species: String)")
     XCTAssert(source.declarations[6].name == "Color.init<Item>(item: Item)")
+    XCTAssert(source.declarations[7].name == "Color.init<Item>(item: Item) where Element: TextRepresentable")
   }
   
   func test_subscript() throws {
@@ -186,7 +190,7 @@ final class DeclarationTests: XCTestCase {
     """
     let source = try Source(source: code)
     XCTAssert(source.declarations.count == 5)
-    XCTAssert(source.declarations[0].name == "TimesTable")
+    XCTAssert(source.declarations[0].name == "struct TimesTable")
     XCTAssert(source.declarations[1].name == "TimesTable.subscript(index: Int) -> Int")
     XCTAssert(source.declarations[2].name == "TimesTable.subscript(row: Int, column: Int) -> Double")
     XCTAssert(source.declarations[3].name == "TimesTable.subscript(n: Int) -> Planet")
@@ -214,15 +218,15 @@ final class DeclarationTests: XCTestCase {
     """
     let source = try Source(source: code)
     XCTAssert(source.declarations.count == 9)
-    XCTAssert(source.declarations[0].name == "name")
-    XCTAssert(source.declarations[1].name == "id")
-    XCTAssert(source.declarations[2].name == "a,b,c")
-    XCTAssert(source.declarations[3].name == "volume")
-    XCTAssert(source.declarations[4].name == "importer")
-    XCTAssert(source.declarations[5].name == "Math")
-    XCTAssert(source.declarations[6].name == "Math.mathFunction")
-    XCTAssert(source.declarations[7].name == "Math.value")
-    XCTAssert(source.declarations[8].name == "Math.max")
+    XCTAssert(source.declarations[0].name == "let name")
+    XCTAssert(source.declarations[1].name == "let id")
+    XCTAssert(source.declarations[2].name == "let a,b,c")
+    XCTAssert(source.declarations[3].name == "var volume")
+    XCTAssert(source.declarations[4].name == "var importer")
+    XCTAssert(source.declarations[5].name == "class Math")
+    XCTAssert(source.declarations[6].name == "var Math.mathFunction")
+    XCTAssert(source.declarations[7].name == "var Math.value")
+    XCTAssert(source.declarations[8].name == "var Math.max")
   }
   
   func test_enum() throws {
@@ -238,12 +242,12 @@ final class DeclarationTests: XCTestCase {
     """
     let source = try Source(source: code)
     XCTAssert(source.declarations.count == 6)
-    XCTAssert(source.declarations[0].name == "CompassPoint")
-    XCTAssert(source.declarations[1].name == "CompassPoint.north,south")
-    XCTAssert(source.declarations[2].name == "CompassPoint.east")
-    XCTAssert(source.declarations[3].name == "CompassPoint.west")
-    XCTAssert(source.declarations[4].name == "CompassPoint.upc(Int, Int, Int, Int)")
-    XCTAssert(source.declarations[5].name == "Planet<Item>")
+    XCTAssert(source.declarations[0].name == "enum CompassPoint")
+    XCTAssert(source.declarations[1].name == "case CompassPoint.north,south")
+    XCTAssert(source.declarations[2].name == "case CompassPoint.east")
+    XCTAssert(source.declarations[3].name == "case CompassPoint.west")
+    XCTAssert(source.declarations[4].name == "case CompassPoint.upc(Int, Int, Int, Int)")
+    XCTAssert(source.declarations[5].name == "enum Planet<Item>")
   }
   
   func test_precedencegroup_operator() throws {
@@ -303,17 +307,17 @@ final class DeclarationTests: XCTestCase {
     """
     let source = try Source(source: code)
     XCTAssert(source.declarations.count == 11)
-    XCTAssert(source.declarations[0].name == "BlackjackCard")
-    XCTAssert(source.declarations[1].name == "BlackjackCard.Suit")
-    XCTAssert(source.declarations[2].name == "BlackjackCard.Suit.spades,hearts,diamonds,clubs")
-    XCTAssert(source.declarations[3].name == "BlackjackCard.Rank")
-    XCTAssert(source.declarations[4].name == "BlackjackCard.Rank.two,three,four,five,six,seven,eight,nine,ten")
-    XCTAssert(source.declarations[5].name == "BlackjackCard.Rank.jack,queen,king,ace")
-    XCTAssert(source.declarations[6].name == "BlackjackCard.Rank.Values")
-    XCTAssert(source.declarations[7].name == "BlackjackCard.Rank.Values.first,second")
-    XCTAssert(source.declarations[8].name == "BlackjackCard.Rank.values")
-    XCTAssert(source.declarations[9].name == "BlackjackCard.rank,suit")
-    XCTAssert(source.declarations[10].name == "BlackjackCard.description")
+    XCTAssert(source.declarations[0].name == "struct BlackjackCard")
+    XCTAssert(source.declarations[1].name == "enum BlackjackCard.Suit: Character")
+    XCTAssert(source.declarations[2].name == "case BlackjackCard.Suit.spades,hearts,diamonds,clubs")
+    XCTAssert(source.declarations[3].name == "enum BlackjackCard.Rank: Int")
+    XCTAssert(source.declarations[4].name == "case BlackjackCard.Rank.two,three,four,five,six,seven,eight,nine,ten")
+    XCTAssert(source.declarations[5].name == "case BlackjackCard.Rank.jack,queen,king,ace")
+    XCTAssert(source.declarations[6].name == "struct BlackjackCard.Rank.Values")
+    XCTAssert(source.declarations[7].name == "let BlackjackCard.Rank.Values.first,second")
+    XCTAssert(source.declarations[8].name == "var BlackjackCard.Rank.values")
+    XCTAssert(source.declarations[9].name == "let BlackjackCard.rank,suit")
+    XCTAssert(source.declarations[10].name == "var BlackjackCard.description")
   }
   
   func test_access_level() throws {
@@ -325,26 +329,28 @@ final class DeclarationTests: XCTestCase {
     class D {}
     fileprivate class E {}
     private class F {}
+    final class G {}
     
     public struct TrackedString {
-      public internal(set) var a = 0
+      public private(set) var a = 0
+      private(set) public var c = 0
       fileprivate(set) var b = 0
-      fileprivate private(set) var c = 0
     }
     """
     let source = try Source(source: code)
-    XCTAssert(source.declarations.count == 10)
+    XCTAssert(source.declarations.count == 11)
     XCTAssert(source.declarations[0].accessLevel == .open)
     XCTAssert(source.declarations[1].accessLevel == .public)
     XCTAssert(source.declarations[2].accessLevel == .internal)
     XCTAssert(source.declarations[3].accessLevel == .internal)
     XCTAssert(source.declarations[4].accessLevel == .fileprivate)
     XCTAssert(source.declarations[5].accessLevel == .private)
+    XCTAssert(source.declarations[6].accessLevel == .internal)
     
-    XCTAssert(source.declarations[6].accessLevel == .public)
     XCTAssert(source.declarations[7].accessLevel == .public)
-    XCTAssert(source.declarations[8].accessLevel == .internal)
-    XCTAssert(source.declarations[9].accessLevel == .fileprivate)
+    XCTAssert(source.declarations[8].accessLevel == .public)
+    XCTAssert(source.declarations[9].accessLevel == .public)
+    XCTAssert(source.declarations[10].accessLevel == .internal)
   }
   
   func test_min_access_level() throws {
@@ -359,8 +365,8 @@ final class DeclarationTests: XCTestCase {
     """
     let source = try Source(source: code, minAccessLevel: .public)
     XCTAssert(source.declarations.count == 2)
-    XCTAssert(source.declarations[0].name == "A")
-    XCTAssert(source.declarations[1].name == "B")
+    XCTAssert(source.declarations[0].name == "class A")
+    XCTAssert(source.declarations[1].name == "struct B")
   }
 }
 
@@ -380,23 +386,18 @@ final class DocumentationTests: XCTestCase {
     let code =
     """
     // A developer line comment
-    /*
-    A developer block comment
-    */
-    
+    /* A developer block comment */
     /// A documentation line comment
-    /**
-    A documentation block comment
-    */
+    /** A documentation block comment */
     mutating public func eat(_ food: Food, quantity: Int) throws -> Int { return 0 }
     """
     let source = try Source(source: code)
     XCTAssert(source.declarations.count == 1)
     XCTAssert(source.declarations[0].comments.count == 4)
-    XCTAssert(source.declarations[0].comments[0].kind == .line)
-    XCTAssert(source.declarations[0].comments[1].kind == .block)
-    XCTAssert(source.declarations[0].comments[2].kind == .docLine)
-    XCTAssert(source.declarations[0].comments[3].kind == .docBlock)
+    XCTAssert(source.declarations[0].comments[0].text == "// A developer line comment")
+    XCTAssert(source.declarations[0].comments[1].text == "/* A developer block comment */")
+    XCTAssert(source.declarations[0].comments[2].text == "/// A documentation line comment")
+    XCTAssert(source.declarations[0].comments[3].text == "/** A documentation block comment */")
   }
 }
 

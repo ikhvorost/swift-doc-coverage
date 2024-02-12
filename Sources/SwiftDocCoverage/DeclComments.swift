@@ -1,6 +1,6 @@
-//  AccessLevel.swift
+//  DeclComment.swift
 //
-//  Created by Iurii Khvorost <iurii.khvorost@gmail.com> on 11.02.2022.
+//  Created by Iurii Khvorost <iurii.khvorost@gmail.com> on 11.02.2024.
 //  Copyright © 2022 Iurii Khvorost. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,40 +24,60 @@
 import SwiftSyntax
 
 
-public enum AccessLevel: Int {
-  case `open`
-  case `public`
-  case `internal`
-  case `fileprivate`
-  case `private`
+struct DeclComment {
+  let piece: TriviaPiece
   
-  init?(token: TokenSyntax) {
-    guard case .keyword(let keyword) = token.tokenKind else {
-      return nil
-    }
-    
-    switch keyword {
-      case .open: self = .open
-      case .public: self = .public
-      case .internal: self = .internal
-      case .fileprivate: self = .fileprivate
-      case .private: self = .private
-      default: return nil
+  var text: String {
+    switch piece {
+      case .lineComment(let text): return text
+      case .blockComment(let text): return text
+      case .docLineComment(let text): return text
+      case .docBlockComment(let text): return text
+      default: return ""
     }
   }
   
-  init(modifiers: DeclModifierListSyntax) {
-    for modifier in modifiers {
-      // Skip private(set) etc.
-      guard modifier.detail == nil else {
-        continue
-      }
-      
-      if let accessLevel = AccessLevel(token: modifier.name) {
-        self = accessLevel
-        return
+  var isDoc: Bool {
+    switch piece {
+      case .docLineComment:
+        fallthrough
+      case .docBlockComment:
+        return true
+      default:
+        return true
+    }
+  }
+  
+  init(piece: TriviaPiece) {
+    self.piece = piece
+  }
+}
+
+struct DeclComments {
+  private let pieces: [DeclComment]
+  
+  var count: Int { pieces.count }
+  
+  var documented: Bool {
+    pieces.first { $0.isDoc } != nil
+  }
+  
+  subscript(index: Int) -> DeclComment { pieces[index] }
+  
+  init(trivia: Trivia) {
+    pieces = trivia.compactMap {
+      switch $0 {
+        case .lineComment:
+          fallthrough
+        case .blockComment:
+          fallthrough
+        case .docLineComment:
+          fallthrough
+        case .docBlockComment:
+          return DeclComment(piece: $0)
+        default:
+          return nil
       }
     }
-    self = .internal
   }
 }

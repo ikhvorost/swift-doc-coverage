@@ -182,7 +182,7 @@ struct Source {
   let declarations: [Declaration]
   
   var undocumented: [Declaration] {
-    declarations.filter { $0.hasDoc == false }
+    declarations.filter { $0.comments.documented == false }
   }
   
   private init(_ sourceFile: SourceFileSyntax, minAccessLevel: AccessLevel) throws {

@@ -21,36 +21,54 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-import Foundation
 import SwiftSyntax
 
-fileprivate extension String {
+
+@resultBuilder
+fileprivate struct StringBuilder {
+  static func buildBlock(_ parts: String...) -> String {
+    parts.joined()
+  }
   
-  static let regexNewLine = try! NSRegularExpression(pattern: #"\n\s*"#, options: [])
-  
-  func refine() -> String {
-    let range = NSRange(startIndex..., in: self)
-    return Self.regexNewLine.stringByReplacingMatches(in: self, options: [], range: range, withTemplate: "")
+  static func buildOptional(_ component: String?) -> String {
+    component ?? ""
   }
 }
 
-
 class Declaration {
-  let decl: DeclProtocol
-  let context: [DeclProtocol]
+  private let decl: DeclProtocol
+  private let context: [DeclProtocol]
+  
   let line: Int
   let column: Int
   
-  lazy var accessLevel: AccessLevel = { decl.accessLevel }()
+  private(set) lazy var accessLevel: AccessLevel = { decl.accessLevel }()
+  private(set) lazy var comments: DeclComments = { decl.comments }()
   
-  lazy var comments: [Comment] = { decl.comments }()
-  lazy var hasDoc: Bool = { comments.contains { $0.isDoc } }()
-  
-  lazy var name: String = {
-    let name = decl.id.refine()
-    let parent = context.map { $0.id }.joined(separator: ".")
-    return parent.isEmpty ? name : "\(parent).\(name)"
-  }()
+  private(set) lazy var name: String = { buildName() }()
+
+  @StringBuilder
+  private func buildName() -> String {
+    if decl.keyword != .`init`, decl.keyword != .subscript {
+      decl.keyword.rawValue
+      " "
+    }
+    
+    if context.count > 0 {
+      context.map { $0.name.trimmedDescription }.joined(separator: ".")
+      "."
+    }
+    
+    decl.name.trimmedDescription
+    decl.genericParameterClause?.trimmedDescription ?? ""
+    decl.inheritanceClause?.trimmedDescription ?? ""
+    decl.funcSignature?.trimmedDescription ?? ""
+    
+    if let genericWhere = decl.genericWhereClause?.trimmedDescription {
+      " "
+      genericWhere
+    }
+  }
   
   init(decl: DeclProtocol, context: [DeclProtocol], location: SourceLocation) {
     self.decl = decl

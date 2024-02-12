@@ -24,71 +24,26 @@
 import SwiftSyntax
 
 
-struct Comment {
-  enum Kind {
-    case line
-    case block
-    case docLine
-    case docBlock
-  }
-  
-  let kind: Kind
-  let text: String
-  
-  var isDoc: Bool { kind == .docLine || kind == .docBlock }
-}
-
 protocol DeclProtocol: SyntaxProtocol {
   
   // var attributes: AttributeListSyntax
   var modifiers: DeclModifierListSyntax { get }
   var keyword: DeclKeyword { get }
   var name: TokenSyntax { get }
+  
   var genericParameterClause: GenericParameterClauseSyntax? { get }
   var inheritanceClause: InheritanceClauseSyntax? { get }
   var funcSignature: FunctionSignatureSyntax? { get }
-  //var genericWhereClause: GenericWhereClauseSyntax? { get }
-
-  var id: String { get }
+  var genericWhereClause: GenericWhereClauseSyntax? { get }
 }
 
 extension DeclProtocol {
-  
   var genericParameterClause: GenericParameterClauseSyntax? { nil }
   var inheritanceClause: InheritanceClauseSyntax? { nil }
   var funcSignature: FunctionSignatureSyntax? { nil }
+  var genericWhereClause: GenericWhereClauseSyntax? { nil }
   
-  var id: String {
-    
-    let generic = genericParameterClause?.trimmedDescription ?? ""
-    let base = "\(keyword.rawValue) \(name.trimmedDescription)\(generic)"
-    
-    if let inheritance = inheritanceClause?.trimmedDescription {
-      return "\(base): \(inheritance)"
-    }
-    else if let funcSignature = funcSignature?.trimmedDescription {
-      return "\(base)\(funcSignature)"
-    }
-    return base
-  }
-
-  var comments: [Comment] {
-    return leadingTrivia.compactMap {
-      switch $0 {
-        case let .lineComment(text):
-          return Comment(kind: .line, text: text)
-        case let .blockComment(text):
-          return Comment(kind: .block, text: text)
-        case let .docLineComment(text):
-          return Comment(kind: .docLine, text: text)
-        case let .docBlockComment(text):
-          return Comment(kind: .docBlock, text: text)
-        default:
-          return nil
-      }
-    }
-  }
-  
+  var comments: DeclComments { DeclComments(trivia: leadingTrivia) }
   var accessLevel: AccessLevel { AccessLevel(modifiers: modifiers) }
 }
 
@@ -133,15 +88,21 @@ extension InitializerDeclSyntax: DeclProtocol {
   
   var name: TokenSyntax {
     let optionalMark = optionalMark?.trimmedDescription ?? ""
-    return TokenSyntax(.identifier(optionalMark), presence: .present)
+    return TokenSyntax(.identifier("init\(optionalMark)"), presence: .present)
   }
+  
+  var funcSignature: FunctionSignatureSyntax? { signature }
 }
 
 extension SubscriptDeclSyntax: DeclProtocol {
   var keyword: DeclKeyword { .subscript }
   
   var name: TokenSyntax {
-    TokenSyntax(.identifier("\(parameterClause.trimmedDescription) \(returnClause.trimmedDescription)"), presence: .present)
+    TokenSyntax(.identifier("subscript"), presence: .present)
+  }
+  
+  var funcSignature: FunctionSignatureSyntax? {
+    FunctionSignatureSyntax(parameterClause: parameterClause, effectSpecifiers: nil, returnClause: returnClause)
   }
 }
 
