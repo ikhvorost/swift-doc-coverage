@@ -35,17 +35,18 @@ fileprivate struct StringBuilder {
   }
 }
 
-class Declaration {
+public class Declaration {
   private let decl: DeclProtocol
   private let context: [DeclProtocol]
   
-  let line: Int
-  let column: Int
+  public let line: Int
+  public let column: Int
   
-  private(set) lazy var accessLevel: AccessLevel = { decl.accessLevel }()
-  private(set) lazy var comments: DeclComments = { decl.comments }()
+  public var keyword: Keyword { decl.keyword }
   
-  private(set) lazy var name: String = { buildName() }()
+  public private(set) lazy var accessLevel: AccessLevel = { decl.accessLevel }()
+  public private(set) lazy var comments: [Comment] = { decl.comments }()
+  public private(set) lazy var name: String = { buildName() }()
 
   @StringBuilder
   private func buildName() -> String {

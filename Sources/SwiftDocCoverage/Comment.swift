@@ -1,4 +1,4 @@
-//  DeclKeyword.swift
+//  Comment.swift
 //
 //  Created by Iurii Khvorost <iurii.khvorost@gmail.com> on 11.02.2024.
 //  Copyright © 2022 Iurii Khvorost. All rights reserved.
@@ -24,56 +24,33 @@
 import SwiftSyntax
 
 
-enum DeclKeyword: String {
-  case actor
-  case `associatedtype`
-  case `case`
-  case `class`
-  //case `deinit`
-  case `enum`
-  case `extension`
-  case `func`
-  //case `import`
-  case `init`
-  case `let`
-  case macro
-  case `operator`
-  case `precedencegroup`
-  case `protocol`
-  case `struct`
-  case `subscript`
-  case `typealias`
-  case `var`
-  //case `inout`
-  //case pound
+public struct Comment {
+  private let piece: TriviaPiece
   
-  init?(token: TokenSyntax) {
-    guard case .keyword(let keyword) = token.tokenKind else {
-      return nil
+  public var text: String {
+    switch piece {
+      case .lineComment(let text): return text
+      case .blockComment(let text): return text
+      case .docLineComment(let text): return text
+      case .docBlockComment(let text): return text
+      default: return ""
     }
-    
-    switch keyword {
-      case .actor: self = .actor
-      case .associatedtype: self = .associatedtype
-      case .case: self = .case
-      case .class: self = .class
-      //case .deinit:
-      case .enum: self = .enum
-      case .extension: self = .extension
-      case .func: self = .func
-      //case .import:
-      case .`init`: self = .`init`
-      case .let: self = .let
-      case .macro: self = .macro
-      //case .operator:
-      case .precedencegroup: self = .precedencegroup
-      case .protocol: self = .protocol
-      case .struct: self = .struct
-      case .subscript: self = .subscript
-      case .typealias: self = .typealias
-      case .var: self = .var
-      //case .inout
-      //case .pound
+  }
+  
+  public var hasDoc: Bool {
+    switch piece {
+      case .docLineComment: fallthrough
+      case .docBlockComment: return true
+      default: return false
+    }
+  }
+  
+  init?(piece: TriviaPiece) {
+    switch piece {
+      case .lineComment: fallthrough
+      case .blockComment: fallthrough
+      case .docLineComment: fallthrough
+      case .docBlockComment: self.piece = piece
       default: return nil
     }
   }

@@ -26,179 +26,27 @@ import SwiftSyntax
 import SwiftParser
 
 
-fileprivate class Visitor: SyntaxVisitor {
-  var declarations = [Declaration]()
-  var context = [DeclProtocol]()
-  let converter: SourceLocationConverter
-  let minAccessLevel: AccessLevel
+public struct Source {
+  public let url: URL?
+  public let source: String
   
-  init(sourceFile: SourceFileSyntax, converter: SourceLocationConverter, minAccessLevel: AccessLevel) {
-    self.converter = converter
-    self.minAccessLevel = minAccessLevel
-    super.init(viewMode: .sourceAccurate)
-    walk(sourceFile)
-  }
-  
-  func append(decl: DeclProtocol) {
-    guard decl.accessLevel.rawValue <= minAccessLevel.rawValue else {
-      return
+  // https://oleb.net/blog/2015/12/lazy-properties-in-structs-swift/
+  public var declarations: [Declaration] {
+    Lazy.var {
+      let sourceFile = Parser.parse(source: source)
+      let converter = SourceLocationConverter(fileName: "", tree: sourceFile)
+      let visitor = Visitor(sourceFile: sourceFile, converter: converter)
+      return visitor.declarations
     }
-    
-    let startLocation = decl.startLocation(converter: converter, afterLeadingTrivia: true)
-    let declaration = Declaration(decl: decl, context: context, location: startLocation)
-    declarations.append(declaration)
   }
   
-  // MARK: - SyntaxVisitor
-  
-  // UnknownDeclSyntax
-  
-  override func visit(_ node: TypeAliasDeclSyntax) -> SyntaxVisitorContinueKind {
-    append(decl: node)
-    return .skipChildren
+  public init(source: String) {
+    self.url = nil
+    self.source = source
   }
   
-  override func visit(_ node: AssociatedTypeDeclSyntax) -> SyntaxVisitorContinueKind {
-    append(decl: node)
-    return .skipChildren
-  }
-  
-  // IfConfigDeclSyntax
-  // IfConfigClauseSyntax
-  // PoundErrorDeclSyntax
-  // PoundWarningDeclSyntax
-  // PoundSourceLocationSyntax
-  
-  override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
-    append(decl: node)
-    context.append(node)
-    return .visitChildren
-  }
-  
-  override func visit(_ node: ActorDeclSyntax) -> SyntaxVisitorContinueKind {
-    append(decl: node)
-    context.append(node)
-    return .visitChildren
-  }
-  
-  override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
-    append(decl: node)
-    context.append(node)
-    return .visitChildren
-  }
-  
-  override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
-    append(decl: node)
-    context.append(node)
-    return .visitChildren
-  }
-  
-  override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
-    append(decl: node)
-    context.append(node)
-    return .visitChildren
-  }
-  
-  override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
-    append(decl: node)
-    return .skipChildren
-  }
-  
-  override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
-    append(decl: node)
-    return .skipChildren
-  }
-  
-  // DeinitializerDeclSyntax
-  
-  override func visit(_ node: SubscriptDeclSyntax) -> SyntaxVisitorContinueKind {
-    append(decl: node)
-    return .skipChildren
-  }
-  
-  // ImportDeclSyntax
-  // AccessorDeclSyntax
-  
-  override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
-    append(decl: node)
-    return .skipChildren
-  }
-  
-  override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
-    append(decl: node)
-    context.append(node)
-    return .visitChildren
-  }
-  
-  override func visit(_ node: EnumCaseDeclSyntax) -> SyntaxVisitorContinueKind {
-    append(decl: node)
-    return .skipChildren
-  }
-  
-  override func visit(_ node: PrecedenceGroupDeclSyntax) -> SyntaxVisitorContinueKind {
-    append(decl: node)
-    return .skipChildren
-  }
-  
-  override func visit(_ node: MacroDeclSyntax) -> SyntaxVisitorContinueKind {
-    append(decl: node)
-    return .skipChildren
-  }
-  
-  // MARK: -
-  
-  override func visitPost(_ node: ClassDeclSyntax) {
-    let decl = context.popLast()
-    assert(decl is ClassDeclSyntax)
-  }
-  
-  override func visitPost(_ node: ActorDeclSyntax) {
-    let decl = context.popLast()
-    assert(decl is ActorDeclSyntax)
-  }
-  
-  override func visitPost(_ node: EnumDeclSyntax) {
-    let decl = context.popLast()
-    assert(decl is EnumDeclSyntax)
-  }
-  
-  override func visitPost(_ node: ExtensionDeclSyntax) {
-    let decl = context.popLast()
-    assert(decl is ExtensionDeclSyntax)
-  }
-  
-  override func visitPost(_ node: ProtocolDeclSyntax) {
-    let decl = context.popLast()
-    assert(decl is ProtocolDeclSyntax)
-  }
-  
-  override func visitPost(_ node: StructDeclSyntax) {
-    let decl = context.popLast()
-    assert(decl is StructDeclSyntax)
-  }
-}
-
-struct Source {
-  let declarations: [Declaration]
-  
-  var undocumented: [Declaration] {
-    declarations.filter { $0.comments.documented == false }
-  }
-  
-  private init(_ sourceFile: SourceFileSyntax, minAccessLevel: AccessLevel) throws {
-    let converter = SourceLocationConverter(fileName: "", tree: sourceFile)
-    let visitor = Visitor(sourceFile: sourceFile, converter: converter, minAccessLevel: minAccessLevel)
-    declarations = visitor.declarations
-  }
-  
-  init(source: String, minAccessLevel: AccessLevel = .private) throws {
-    let sourceFile = Parser.parse(source: source)
-    try self.init(sourceFile, minAccessLevel: minAccessLevel)
-  }
-  
-  init(fileURL: URL, minAccessLevel: AccessLevel = .private) throws {
-    let source = try String(contentsOf: fileURL)
-    let sourceFile = Parser.parse(source: source)
-    try self.init(sourceFile, minAccessLevel: minAccessLevel)
+  public init(url: URL) throws {
+    self.url = url
+    self.source = try String(contentsOf: url)
   }
 }

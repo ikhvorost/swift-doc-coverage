@@ -1,6 +1,6 @@
-//  Report.swift
+//  Lazy.swift
 //
-//  Created by Iurii Khvorost <iurii.khvorost@gmail.com> on 08.09.2022.
+//  Created by Iurii Khvorost <iurii.khvorost@gmail.com> on 13.02.2024.
 //  Copyright © 2022 Iurii Khvorost. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,40 +23,20 @@
 
 import Foundation
 
-struct DeclarationReport: Codable {
-  let line: Int
-  let column: Int
-  let name: String
-}
-
-public struct SourceReport: Codable {
-  let path: String
-  let totalCount: Int
-  let undocumented: [DeclarationReport]
+class Lazy {
+  private static var cache = [String : Any]()
   
-  var fileName: String {
-    NSString(string: path).lastPathComponent
-  }
-  
-  var coverage: Int {
-    precondition(totalCount > 0)
-    return (totalCount - undocumented.count) * 100 / totalCount
-  }
-}
-
-public struct CoverageReport: Codable {
-  public let sources: [SourceReport]
-  
-  public var totalCount: Int {
-    sources.reduce(0) { $0 + $1.totalCount }
-  }
-  
-  public var totalUndocumentedCount: Int {
-    sources.reduce(0) { $0 + $1.undocumented.count }
-  }
-  
-  var coverage: Int {
-    precondition(totalCount > 0)
-    return (totalCount - totalUndocumentedCount) * 100 / totalCount
+  static func `var`<T>(file: String = #file, line: Int = #line, column: Int = #column, f: () -> T) -> T {
+    objc_sync_enter(self)
+    defer { objc_sync_exit(self) }
+    
+    let key = "\(file):\(line):\(column)"
+    guard let value = cache[key] as? T else {
+      let value = f()
+      print(value)
+      cache[key] = value
+      return value
+    }
+    return value
   }
 }

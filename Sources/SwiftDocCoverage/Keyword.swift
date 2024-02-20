@@ -1,4 +1,4 @@
-//  DeclComment.swift
+//  Keyword.swift
 //
 //  Created by Iurii Khvorost <iurii.khvorost@gmail.com> on 11.02.2024.
 //  Copyright © 2022 Iurii Khvorost. All rights reserved.
@@ -24,60 +24,50 @@
 import SwiftSyntax
 
 
-struct DeclComment {
-  let piece: TriviaPiece
+public enum Keyword: String {
+  case actor
+  case `associatedtype`
+  case `case`
+  case `class`
+  case `enum`
+  case `extension`
+  case `func`
+  //case `import`
+  case `init`
+  case `let`
+  case macro
+  case `operator`
+  case `precedencegroup`
+  case `protocol`
+  case `struct`
+  case `subscript`
+  case `typealias`
+  case `var`
   
-  var text: String {
-    switch piece {
-      case .lineComment(let text): return text
-      case .blockComment(let text): return text
-      case .docLineComment(let text): return text
-      case .docBlockComment(let text): return text
-      default: return ""
+  init?(token: TokenSyntax) {
+    guard case .keyword(let keyword) = token.tokenKind else {
+      return nil
     }
-  }
-  
-  var isDoc: Bool {
-    switch piece {
-      case .docLineComment:
-        fallthrough
-      case .docBlockComment:
-        return true
-      default:
-        return true
-    }
-  }
-  
-  init(piece: TriviaPiece) {
-    self.piece = piece
-  }
-}
-
-struct DeclComments {
-  private let pieces: [DeclComment]
-  
-  var count: Int { pieces.count }
-  
-  var documented: Bool {
-    pieces.first { $0.isDoc } != nil
-  }
-  
-  subscript(index: Int) -> DeclComment { pieces[index] }
-  
-  init(trivia: Trivia) {
-    pieces = trivia.compactMap {
-      switch $0 {
-        case .lineComment:
-          fallthrough
-        case .blockComment:
-          fallthrough
-        case .docLineComment:
-          fallthrough
-        case .docBlockComment:
-          return DeclComment(piece: $0)
-        default:
-          return nil
-      }
+    
+    switch keyword {
+      case .actor: self = .actor
+      case .associatedtype: self = .associatedtype
+      case .case: self = .case
+      case .class: self = .class
+      case .enum: self = .enum
+      case .extension: self = .extension
+      case .func: self = .func
+      //case .import:
+      case .`init`: self = .`init`
+      case .let: self = .let
+      case .macro: self = .macro
+      case .precedencegroup: self = .precedencegroup
+      case .protocol: self = .protocol
+      case .struct: self = .struct
+      case .subscript: self = .subscript
+      case .typealias: self = .typealias
+      case .var: self = .var
+      default: return nil
     }
   }
 }

@@ -28,7 +28,7 @@ protocol DeclProtocol: SyntaxProtocol {
   
   // var attributes: AttributeListSyntax
   var modifiers: DeclModifierListSyntax { get }
-  var keyword: DeclKeyword { get }
+  var keyword: Keyword { get }
   var name: TokenSyntax { get }
   
   var genericParameterClause: GenericParameterClauseSyntax? { get }
@@ -43,48 +43,50 @@ extension DeclProtocol {
   var funcSignature: FunctionSignatureSyntax? { nil }
   var genericWhereClause: GenericWhereClauseSyntax? { nil }
   
-  var comments: DeclComments { DeclComments(trivia: leadingTrivia) }
+  var comments: [Comment] {
+    leadingTrivia.compactMap { Comment(piece: $0) }
+  }
   var accessLevel: AccessLevel { AccessLevel(modifiers: modifiers) }
 }
 
 // MARK: -
 
 extension TypeAliasDeclSyntax: DeclProtocol {
-  var keyword: DeclKeyword { .typealias }
+  var keyword: Keyword { .typealias }
 }
 
 extension AssociatedTypeDeclSyntax: DeclProtocol {
-  var keyword: DeclKeyword { .associatedtype }
+  var keyword: Keyword { .associatedtype }
 }
 
 extension ClassDeclSyntax: DeclProtocol {
-  var keyword: DeclKeyword { .class }
+  var keyword: Keyword { .class }
 }
 
 extension ActorDeclSyntax: DeclProtocol {
-  var keyword: DeclKeyword { .actor }
+  var keyword: Keyword { .actor }
 }
 
 extension StructDeclSyntax: DeclProtocol {
-  var keyword: DeclKeyword { .struct }
+  var keyword: Keyword { .struct }
 }
 
 extension ProtocolDeclSyntax: DeclProtocol {
-  var keyword: DeclKeyword { .protocol }
+  var keyword: Keyword { .protocol }
 }
 
 extension ExtensionDeclSyntax: DeclProtocol {
-  var keyword: DeclKeyword { .extension }
+  var keyword: Keyword { .extension }
   var name: TokenSyntax { TokenSyntax(.identifier(extendedType.trimmedDescription), presence: .present)}
 }
 
 extension FunctionDeclSyntax: DeclProtocol {
-  var keyword: DeclKeyword { .func }
+  var keyword: Keyword { .func }
   var funcSignature: FunctionSignatureSyntax? { signature }
 }
 
 extension InitializerDeclSyntax: DeclProtocol {
-  var keyword: DeclKeyword { .`init` }
+  var keyword: Keyword { .`init` }
   
   var name: TokenSyntax {
     let optionalMark = optionalMark?.trimmedDescription ?? ""
@@ -95,7 +97,7 @@ extension InitializerDeclSyntax: DeclProtocol {
 }
 
 extension SubscriptDeclSyntax: DeclProtocol {
-  var keyword: DeclKeyword { .subscript }
+  var keyword: Keyword { .subscript }
   
   var name: TokenSyntax {
     TokenSyntax(.identifier("subscript"), presence: .present)
@@ -107,7 +109,7 @@ extension SubscriptDeclSyntax: DeclProtocol {
 }
 
 extension VariableDeclSyntax: DeclProtocol {
-  var keyword: DeclKeyword { DeclKeyword(token: bindingSpecifier)! }
+  var keyword: Keyword { Keyword(token: bindingSpecifier)! }
   
   var name: TokenSyntax {
     let name = bindings.map { $0.pattern.trimmedDescription }.joined(separator: ",")
@@ -116,11 +118,11 @@ extension VariableDeclSyntax: DeclProtocol {
 }
 
 extension EnumDeclSyntax: DeclProtocol {
-  var keyword: DeclKeyword { .enum }
+  var keyword: Keyword { .enum }
 }
 
 extension EnumCaseDeclSyntax: DeclProtocol {
-  var keyword: DeclKeyword { .case }
+  var keyword: Keyword { .case }
   
   var name: TokenSyntax {
     let name = elements.map {
@@ -133,10 +135,10 @@ extension EnumCaseDeclSyntax: DeclProtocol {
 }
 
 extension PrecedenceGroupDeclSyntax: DeclProtocol {
-  var keyword: DeclKeyword { .precedencegroup }
+  var keyword: Keyword { .precedencegroup }
 }
 
 extension MacroDeclSyntax: DeclProtocol {
-  var keyword: DeclKeyword { .macro }
+  var keyword: Keyword { .macro }
   var funcSignature: FunctionSignatureSyntax? { signature }
 }
