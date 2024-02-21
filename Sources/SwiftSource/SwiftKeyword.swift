@@ -1,4 +1,4 @@
-//  Keyword.swift
+//  SwiftKeyword.swift
 //
 //  Created by Iurii Khvorost <iurii.khvorost@gmail.com> on 11.02.2024.
 //  Copyright © 2022 Iurii Khvorost. All rights reserved.
@@ -24,7 +24,7 @@
 import SwiftSyntax
 
 
-public enum Keyword: String {
+public enum SwiftKeyword: String {
   case actor
   case `associatedtype`
   case `case`

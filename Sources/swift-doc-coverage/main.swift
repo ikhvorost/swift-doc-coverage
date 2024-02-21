@@ -23,13 +23,13 @@
 
 import Foundation
 import ArgumentParser
-import SwiftDocCoverage
+import SwiftSource
 
 
-enum AccessLevelArgument: String, ExpressibleByArgument {
+enum AccessLevel: String, ExpressibleByArgument {
   case open, `public`, `internal`, `fileprivate`, `private`
   
-  var accessLevel: AccessLevel {
+  var accessLevel: SwiftAccessLevel {
     switch self {
       case .open: return .open
       case .public: return .public
@@ -62,8 +62,8 @@ struct SwiftDocCoverage: ParsableCommand {
   @Option(name: .shortAndLong, help: "Skip source code files with file paths that match the given regular expression.")
   var ignoreFilenameRegex: String = ""
   
-  @Option(name: .shortAndLong, help: "The minimum access level of the symbols considered for coverage statistics: \(AccessLevelArgument.open), \(AccessLevelArgument.public), \(AccessLevelArgument.internal), \(AccessLevelArgument.fileprivate), \(AccessLevelArgument.private).")
-  var minimumAccessLevel: AccessLevelArgument = .public
+  @Option(name: .shortAndLong, help: "The minimum access level of the symbols considered for coverage statistics: \(AccessLevel.open), \(AccessLevel.public), \(AccessLevel.internal), \(AccessLevel.fileprivate), \(AccessLevel.private).")
+  var minimumAccessLevel: AccessLevel = .public
   
   @Option(name: .shortAndLong, help: "Report modes: \(ReportArgument.statistics.rawValue), \(ReportArgument.warnings.rawValue), \(ReportArgument.json.rawValue).")
   var report: ReportArgument = .statistics

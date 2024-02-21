@@ -1,4 +1,4 @@
-//  AccessLevel.swift
+//  SwiftAccessLevel.swift
 //
 //  Created by Iurii Khvorost <iurii.khvorost@gmail.com> on 11.02.2022.
 //  Copyright © 2022 Iurii Khvorost. All rights reserved.
@@ -24,7 +24,7 @@
 import SwiftSyntax
 
 
-public enum AccessLevel: Int {
+public enum SwiftAccessLevel: Int {
   case `open`
   case `public`
   case `internal`
@@ -53,7 +53,7 @@ public enum AccessLevel: Int {
         continue
       }
       
-      if let accessLevel = AccessLevel(token: modifier.name) {
+      if let accessLevel = SwiftAccessLevel(token: modifier.name) {
         self = accessLevel
         return
       }

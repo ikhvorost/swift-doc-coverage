@@ -13,7 +13,7 @@ let package = Package(
     .watchOS(.v6)
   ],
   products: [
-    .library(name: "SwiftDocCoverage", targets: ["SwiftDocCoverage"]),
+    .library(name: "SwiftSource", targets: ["SwiftSource"]),
     .executable(name: "swift-doc-coverage", targets: ["swift-doc-coverage"])
   ],
   dependencies: [
@@ -22,7 +22,7 @@ let package = Package(
   ],
   targets: [
     .target(
-      name: "SwiftDocCoverage",
+      name: "SwiftSource",
       dependencies: [
         .product(name: "SwiftSyntax", package: "swift-syntax"),
         .product(name: "SwiftParser", package: "swift-syntax"),
@@ -31,7 +31,7 @@ let package = Package(
     .executableTarget(
       name: "swift-doc-coverage",
       dependencies: [
-        .target(name: "SwiftDocCoverage"),
+        .target(name: "SwiftSource"),
         .product(name: "ArgumentParser", package: "swift-argument-parser")
       ]
     ),

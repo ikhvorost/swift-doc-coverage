@@ -28,7 +28,7 @@ protocol DeclProtocol: DeclSyntaxProtocol {
   
   // var attributes: AttributeListSyntax
   var modifiers: DeclModifierListSyntax { get }
-  var keyword: Keyword { get }
+  var keyword: SwiftKeyword { get }
   var name: TokenSyntax { get }
   
   var genericParameterClause: GenericParameterClauseSyntax? { get }
@@ -43,50 +43,50 @@ extension DeclProtocol {
   var funcSignature: FunctionSignatureSyntax? { nil }
   var genericWhereClause: GenericWhereClauseSyntax? { nil }
   
-  var comments: [Comment] {
-    leadingTrivia.compactMap { Comment(piece: $0) }
+  var comments: [SwiftComment] {
+    leadingTrivia.compactMap { SwiftComment(piece: $0) }
   }
-  var accessLevel: AccessLevel { AccessLevel(modifiers: modifiers) }
+  var accessLevel: SwiftAccessLevel { SwiftAccessLevel(modifiers: modifiers) }
 }
 
 // MARK: -
 
 extension TypeAliasDeclSyntax: DeclProtocol {
-  var keyword: Keyword { .typealias }
+  var keyword: SwiftKeyword { .typealias }
 }
 
 extension AssociatedTypeDeclSyntax: DeclProtocol {
-  var keyword: Keyword { .associatedtype }
+  var keyword: SwiftKeyword { .associatedtype }
 }
 
 extension ClassDeclSyntax: DeclProtocol {
-  var keyword: Keyword { .class }
+  var keyword: SwiftKeyword { .class }
 }
 
 extension ActorDeclSyntax: DeclProtocol {
-  var keyword: Keyword { .actor }
+  var keyword: SwiftKeyword { .actor }
 }
 
 extension StructDeclSyntax: DeclProtocol {
-  var keyword: Keyword { .struct }
+  var keyword: SwiftKeyword { .struct }
 }
 
 extension ProtocolDeclSyntax: DeclProtocol {
-  var keyword: Keyword { .protocol }
+  var keyword: SwiftKeyword { .protocol }
 }
 
 extension ExtensionDeclSyntax: DeclProtocol {
-  var keyword: Keyword { .extension }
+  var keyword: SwiftKeyword { .extension }
   var name: TokenSyntax { TokenSyntax(.identifier(extendedType.trimmedDescription), presence: .present)}
 }
 
 extension FunctionDeclSyntax: DeclProtocol {
-  var keyword: Keyword { .func }
+  var keyword: SwiftKeyword { .func }
   var funcSignature: FunctionSignatureSyntax? { signature }
 }
 
 extension InitializerDeclSyntax: DeclProtocol {
-  var keyword: Keyword { .`init` }
+  var keyword: SwiftKeyword { .`init` }
   
   var name: TokenSyntax {
     let optionalMark = optionalMark?.trimmedDescription ?? ""
@@ -97,7 +97,7 @@ extension InitializerDeclSyntax: DeclProtocol {
 }
 
 extension SubscriptDeclSyntax: DeclProtocol {
-  var keyword: Keyword { .subscript }
+  var keyword: SwiftKeyword { .subscript }
   
   var name: TokenSyntax {
     TokenSyntax(.identifier("subscript"), presence: .present)
@@ -109,7 +109,7 @@ extension SubscriptDeclSyntax: DeclProtocol {
 }
 
 extension VariableDeclSyntax: DeclProtocol {
-  var keyword: Keyword { Keyword(token: bindingSpecifier)! }
+  var keyword: SwiftKeyword { SwiftKeyword(token: bindingSpecifier)! }
   
   var name: TokenSyntax {
     let name = bindings.map { $0.pattern.trimmedDescription }.joined(separator: ",")
@@ -118,11 +118,11 @@ extension VariableDeclSyntax: DeclProtocol {
 }
 
 extension EnumDeclSyntax: DeclProtocol {
-  var keyword: Keyword { .enum }
+  var keyword: SwiftKeyword { .enum }
 }
 
 extension EnumCaseDeclSyntax: DeclProtocol {
-  var keyword: Keyword { .case }
+  var keyword: SwiftKeyword { .case }
   
   var name: TokenSyntax {
     let name = elements.map {
@@ -135,10 +135,10 @@ extension EnumCaseDeclSyntax: DeclProtocol {
 }
 
 extension PrecedenceGroupDeclSyntax: DeclProtocol {
-  var keyword: Keyword { .precedencegroup }
+  var keyword: SwiftKeyword { .precedencegroup }
 }
 
 extension MacroDeclSyntax: DeclProtocol {
-  var keyword: Keyword { .macro }
+  var keyword: SwiftKeyword { .macro }
   var funcSignature: FunctionSignatureSyntax? { signature }
 }

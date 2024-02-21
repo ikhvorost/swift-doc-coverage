@@ -29,7 +29,7 @@ class Visitor: SyntaxVisitor {
   private var context = [DeclProtocol]()
   private let converter: SourceLocationConverter
   
-  private(set) var declarations = [Declaration]()
+  private(set) var declarations = [SwiftDeclaration]()
   
   init(source: String) {
     let sourceFile = Parser.parse(source: source)
@@ -45,7 +45,7 @@ class Visitor: SyntaxVisitor {
       ? context.map { $0.name.trimmedDescription }.joined(separator: ".")
       : nil
     
-    let declaration = Declaration(decl: decl, path: path, location: startLocation)
+    let declaration = SwiftDeclaration(decl: decl, path: path, location: startLocation)
     declarations.append(declaration)
   }
   

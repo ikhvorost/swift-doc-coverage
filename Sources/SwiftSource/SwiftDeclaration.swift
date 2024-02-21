@@ -1,4 +1,4 @@
-//  Declaration.swift
+//  SwiftDeclaration.swift
 //
 //  Created by Iurii Khvorost <iurii.khvorost@gmail.com> on 09.08.2022.
 //  Copyright © 2022 Iurii Khvorost. All rights reserved.
@@ -35,10 +35,10 @@ fileprivate struct StringBuilder {
   }
 }
 
-public struct Declaration {
-  public let comments: [Comment]
-  public let accessLevel: AccessLevel
-  public var keyword: Keyword
+public struct SwiftDeclaration {
+  public let comments: [SwiftComment]
+  public let accessLevel: SwiftAccessLevel
+  public var keyword: SwiftKeyword
   public let name: String
   public let line: Int
   public let column: Int

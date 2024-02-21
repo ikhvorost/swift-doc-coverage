@@ -1,5 +1,5 @@
 import XCTest
-/*@testable */import SwiftDocCoverage
+/*@testable */import SwiftSource
 
 func tempDirectory() -> URL {
   let url = URL(fileURLWithPath: NSTemporaryDirectory())
@@ -18,7 +18,7 @@ final class DeclarationTests: XCTestCase {
       typealias AudioSample = UInt16
     }
     """
-    let source = Source(source: code)
+    let source = SwiftSource(source: code)
     XCTAssert(source.declarations.count == 3)
     XCTAssert(source.declarations[0].name == "typealias SSN")
     XCTAssert(source.declarations[1].name == "class Audio")
@@ -34,7 +34,7 @@ final class DeclarationTests: XCTestCase {
       associatedtype Suffix: SuffixableContainer where Suffix.Item == Item
     }
     """
-    let source = Source(source: code)
+    let source = SwiftSource(source: code)
     XCTAssert(source.declarations.count == 4)
     XCTAssert(source.declarations[0].name == "protocol Container")
     XCTAssert(source.declarations[1].name == "associatedtype Container.Item")
@@ -59,7 +59,7 @@ final class DeclarationTests: XCTestCase {
       class E {}
     #endif
     """
-    let source = Source(source: code)
+    let source = SwiftSource(source: code)
     XCTAssert(source.declarations.count == 5)
     XCTAssert(source.declarations[0].name == "class A")
     XCTAssert(source.declarations[1].name == "class B")
@@ -77,7 +77,7 @@ final class DeclarationTests: XCTestCase {
     class Stack<Element>: Base {}
     actor UserStorage {}
     """
-    let source = Source(source: code)
+    let source = SwiftSource(source: code)
     XCTAssert(source.declarations.count == 5)
     XCTAssert(source.declarations[0].name == "class Vehicle")
     XCTAssert(source.declarations[1].name == "class Bicycle: Vehicle")
@@ -93,7 +93,7 @@ final class DeclarationTests: XCTestCase {
     struct Person: FullyNamed {}
     struct Stack<Element> {}
     """
-    let source = Source(source: code)
+    let source = SwiftSource(source: code)
     XCTAssert(source.declarations.count == 3)
     XCTAssert(source.declarations[0].name == "struct Book")
     XCTAssert(source.declarations[1].name == "struct Person: FullyNamed")
@@ -108,7 +108,7 @@ final class DeclarationTests: XCTestCase {
     protocol SomeClassOnlyProtocol: AnyObject, SomeInheritedProtocol {}
     @objc protocol CounterDataSource {}
     """
-    let source = Source(source: code)
+    let source = SwiftSource(source: code)
     XCTAssert(source.declarations.count == 4)
     XCTAssert(source.declarations[0].name == "protocol Container")
     XCTAssert(source.declarations[1].name == "protocol InheritingProtocol: SomeProtocol, AnotherProtocol")
@@ -123,7 +123,7 @@ final class DeclarationTests: XCTestCase {
     extension SomeType: SomeProtocol, AnotherProtocol {}
     extension Array: TextRepresentable where Element: TextRepresentable {}
     """
-    let source = Source(source: code)
+    let source = SwiftSource(source: code)
     XCTAssert(source.declarations.count == 3)
     XCTAssert(source.declarations[0].name == "extension Container")
     XCTAssert(source.declarations[1].name == "extension SomeType: SomeProtocol, AnotherProtocol")
@@ -142,7 +142,7 @@ final class DeclarationTests: XCTestCase {
       static func + (left: Vector2D, right: Vector2D) -> Vector2D {}
     }
     """
-    let source = Source(source: code)
+    let source = SwiftSource(source: code)
     XCTAssert(source.declarations.count == 7)
     XCTAssert(source.declarations[0].name == "func greet(person: String) -> String")
     XCTAssert(source.declarations[1].name == "func someFunction(argumentLabel parameterName: Int)")
@@ -166,7 +166,7 @@ final class DeclarationTests: XCTestCase {
       init<Item>(item: Item) where Element: TextRepresentable {}
     }
     """
-    let source = Source(source: code)
+    let source = SwiftSource(source: code)
     XCTAssert(source.declarations.count == 8)
     XCTAssert(source.declarations[0].name == "struct Color")
     XCTAssert(source.declarations[1].name == "Color.init()")
@@ -188,7 +188,7 @@ final class DeclarationTests: XCTestCase {
       subscript<Item>(n: Int) -> Item {}
     }
     """
-    let source = Source(source: code)
+    let source = SwiftSource(source: code)
     XCTAssert(source.declarations.count == 5)
     XCTAssert(source.declarations[0].name == "struct TimesTable")
     XCTAssert(source.declarations[1].name == "TimesTable.subscript(index: Int) -> Int")
@@ -216,7 +216,7 @@ final class DeclarationTests: XCTestCase {
       }
     }
     """
-    let source = Source(source: code)
+    let source = SwiftSource(source: code)
     XCTAssert(source.declarations.count == 9)
     XCTAssert(source.declarations[0].name == "let name")
     XCTAssert(source.declarations[1].name == "let id")
@@ -240,7 +240,7 @@ final class DeclarationTests: XCTestCase {
     }
     enum Planet<Item> {}
     """
-    let source = Source(source: code)
+    let source = SwiftSource(source: code)
     XCTAssert(source.declarations.count == 6)
     XCTAssert(source.declarations[0].name == "enum CompassPoint")
     XCTAssert(source.declarations[1].name == "case CompassPoint.north,south")
@@ -258,7 +258,7 @@ final class DeclarationTests: XCTestCase {
     }
     infix operator => : ForwardPipe
     """
-    let source = Source(source: code)
+    let source = SwiftSource(source: code)
     XCTAssert(source.declarations.count == 1)
     XCTAssert(source.declarations[0].name == "precedencegroup ForwardPipe")
     //XCTAssert(source.declarations[1].name == "operator =>")
@@ -305,7 +305,7 @@ final class DeclarationTests: XCTestCase {
       }
     }
     """
-    let source = Source(source: code)
+    let source = SwiftSource(source: code)
     XCTAssert(source.declarations.count == 11)
     XCTAssert(source.declarations[0].name == "struct BlackjackCard")
     XCTAssert(source.declarations[1].name == "enum BlackjackCard.Suit: Character")
@@ -338,7 +338,7 @@ final class DeclarationTests: XCTestCase {
       static let shared = 10
     }
     """
-    let source = Source(source: code)
+    let source = SwiftSource(source: code)
     XCTAssert(source.declarations.count == 12)
     XCTAssert(source.declarations[0].accessLevel == .open)
     XCTAssert(source.declarations[1].accessLevel == .public)
@@ -363,7 +363,7 @@ final class DocumentationTests: XCTestCase {
     """
     public func eat(_ food: Food, quantity: Int) throws -> Int { return 0 }
     """
-    let source = Source(source: code)
+    let source = SwiftSource(source: code)
     XCTAssert(source.declarations.count == 1)
     XCTAssert(source.declarations[0].comments.count == 0)
   }
@@ -377,7 +377,7 @@ final class DocumentationTests: XCTestCase {
     /** A documentation block comment */
     mutating public func eat(_ food: Food, quantity: Int) throws -> Int { return 0 }
     """
-    let source = Source(source: code)
+    let source = SwiftSource(source: code)
     XCTAssert(source.declarations.count == 1)
     XCTAssert(source.declarations[0].comments.count == 4)
     XCTAssert(source.declarations[0].comments[0].text == "// A developer line comment")
@@ -395,7 +395,7 @@ final class FileTests: XCTestCase {
   static let emptyDirURL =  directoryURL.appendingPathComponent("Empty")
   
   func test_file() throws {
-    let source = try Source(url: Self.fileURL)
+    let source = try SwiftSource(url: Self.fileURL)
     XCTAssert(source.declarations.count == 4)
   }
   

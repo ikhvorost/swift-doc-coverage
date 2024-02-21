@@ -30,7 +30,7 @@ extension String : LocalizedError {
 
 public struct Coverage {
   let urls: [URL]
-  let minAccessLevel: AccessLevel
+  let minAccessLevel: SwiftAccessLevel
   let output: Output
   
   private static func files(path: String, ext: String, skipsHiddenFiles: Bool, ignoreFilenameRegex: String) throws -> [URL]  {
@@ -42,7 +42,9 @@ public struct Coverage {
     if isDirectory.boolValue {
       var urls = [URL]()
       
-      let regex: NSRegularExpression? = ignoreFilenameRegex.isEmpty ? nil : try NSRegularExpression(pattern: ignoreFilenameRegex)
+      let regex: NSRegularExpression? = ignoreFilenameRegex.isEmpty 
+        ? nil
+        : try NSRegularExpression(pattern: ignoreFilenameRegex)
       
       let url = URL(fileURLWithPath: path)
       let resourceKeys = Set<URLResourceKey>([.nameKey, .isDirectoryKey])
@@ -86,7 +88,7 @@ public struct Coverage {
     return formatter
   }()
   
-  public init(paths: [String], skipsHiddenFiles: Bool = true, ignoreFilenameRegex: String = "", minAccessLevel: AccessLevel = .public, output: Output = TerminalOutput()) throws {
+  public init(paths: [String], skipsHiddenFiles: Bool = true, ignoreFilenameRegex: String = "", minAccessLevel: SwiftAccessLevel = .public, output: Output = TerminalOutput()) throws {
     self.urls = try paths.flatMap {
       try Self.files(path: $0, ext: ".swift", skipsHiddenFiles: skipsHiddenFiles, ignoreFilenameRegex: ignoreFilenameRegex)
     }
@@ -126,7 +128,7 @@ public struct Coverage {
     try urls.forEach { url in
       let time = Date()
       
-      let source = try Source(url: url)
+      let source = try SwiftSource(url: url)
       
       guard source.declarations.count > 0 else {
         return

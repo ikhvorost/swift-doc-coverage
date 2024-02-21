@@ -1,6 +1,6 @@
-//  Comment.swift
+//  SwiftSource.swift
 //
-//  Created by Iurii Khvorost <iurii.khvorost@gmail.com> on 11.02.2024.
+//  Created by Iurii Khvorost <iurii.khvorost@gmail.com> on 08.08.2022.
 //  Copyright © 2022 Iurii Khvorost. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,37 +21,26 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+import Foundation
 import SwiftSyntax
 
 
-public struct Comment {
-  private let piece: TriviaPiece
+public struct SwiftSource {
+  public let url: URL?
+  public let declarations: [SwiftDeclaration]
   
-  public var text: String {
-    switch piece {
-      case .lineComment(let text): return text
-      case .blockComment(let text): return text
-      case .docLineComment(let text): return text
-      case .docBlockComment(let text): return text
-      default: return ""
-    }
+  private init(url: URL?, source: String) {
+    self.url = url
+    let visitor = Visitor(source: source)
+    self.declarations = visitor.declarations
+  }
+    
+  public init(source: String) {
+    self.init(url: nil, source: source)
   }
   
-  public var hasDoc: Bool {
-    switch piece {
-      case .docLineComment: fallthrough
-      case .docBlockComment: return true
-      default: return false
-    }
-  }
-  
-  init?(piece: TriviaPiece) {
-    switch piece {
-      case .lineComment: fallthrough
-      case .blockComment: fallthrough
-      case .docLineComment: fallthrough
-      case .docBlockComment: self.piece = piece
-      default: return nil
-    }
+  public init(url: URL) throws {
+    let source = try String(contentsOf: url)
+    self.init(url: url, source: source)
   }
 }
