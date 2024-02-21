@@ -22,22 +22,30 @@
 //  THE SOFTWARE.
 
 import SwiftSyntax
+import SwiftParser
 
 
 class Visitor: SyntaxVisitor {
-  var declarations = [Declaration]()
-  var context = [DeclProtocol]()
-  let converter: SourceLocationConverter
+  private var context = [DeclProtocol]()
+  private let converter: SourceLocationConverter
   
-  init(sourceFile: SourceFileSyntax, converter: SourceLocationConverter) {
-    self.converter = converter
+  private(set) var declarations = [Declaration]()
+  
+  init(source: String) {
+    let sourceFile = Parser.parse(source: source)
+    self.converter = SourceLocationConverter(fileName: "", tree: sourceFile)
     super.init(viewMode: .sourceAccurate)
     walk(sourceFile)
   }
   
   func append(decl: DeclProtocol) {
     let startLocation = decl.startLocation(converter: converter, afterLeadingTrivia: true)
-    let declaration = Declaration(decl: decl, context: context, location: startLocation)
+    
+    let path: String? = context.count > 0
+      ? context.map { $0.name.trimmedDescription }.joined(separator: ".")
+      : nil
+    
+    let declaration = Declaration(decl: decl, path: path, location: startLocation)
     declarations.append(declaration)
   }
   
@@ -59,10 +67,20 @@ class Visitor: SyntaxVisitor {
     return .visitChildren
   }
   
+  override func visitPost(_ node: ClassDeclSyntax) {
+    let decl = context.popLast()
+    assert(decl is ClassDeclSyntax)
+  }
+  
   override func visit(_ node: ActorDeclSyntax) -> SyntaxVisitorContinueKind {
     append(decl: node)
     context.append(node)
     return .visitChildren
+  }
+  
+  override func visitPost(_ node: ActorDeclSyntax) {
+    let decl = context.popLast()
+    assert(decl is ActorDeclSyntax)
   }
   
   override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -71,16 +89,31 @@ class Visitor: SyntaxVisitor {
     return .visitChildren
   }
   
+  override func visitPost(_ node: StructDeclSyntax) {
+    let decl = context.popLast()
+    assert(decl is StructDeclSyntax)
+  }
+  
   override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
     append(decl: node)
     context.append(node)
     return .visitChildren
   }
   
+  override func visitPost(_ node: ProtocolDeclSyntax) {
+    let decl = context.popLast()
+    assert(decl is ProtocolDeclSyntax)
+  }
+  
   override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
     append(decl: node)
     context.append(node)
     return .visitChildren
+  }
+  
+  override func visitPost(_ node: ExtensionDeclSyntax) {
+    let decl = context.popLast()
+    assert(decl is ExtensionDeclSyntax)
   }
   
   override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -109,6 +142,11 @@ class Visitor: SyntaxVisitor {
     return .visitChildren
   }
   
+  override func visitPost(_ node: EnumDeclSyntax) {
+    let decl = context.popLast()
+    assert(decl is EnumDeclSyntax)
+  }
+  
   override func visit(_ node: EnumCaseDeclSyntax) -> SyntaxVisitorContinueKind {
     append(decl: node)
     return .skipChildren
@@ -122,37 +160,5 @@ class Visitor: SyntaxVisitor {
   override func visit(_ node: MacroDeclSyntax) -> SyntaxVisitorContinueKind {
     append(decl: node)
     return .skipChildren
-  }
-  
-  // MARK: -
-  
-  override func visitPost(_ node: ClassDeclSyntax) {
-    let decl = context.popLast()
-    assert(decl is ClassDeclSyntax)
-  }
-  
-  override func visitPost(_ node: ActorDeclSyntax) {
-    let decl = context.popLast()
-    assert(decl is ActorDeclSyntax)
-  }
-  
-  override func visitPost(_ node: EnumDeclSyntax) {
-    let decl = context.popLast()
-    assert(decl is EnumDeclSyntax)
-  }
-  
-  override func visitPost(_ node: ExtensionDeclSyntax) {
-    let decl = context.popLast()
-    assert(decl is ExtensionDeclSyntax)
-  }
-  
-  override func visitPost(_ node: ProtocolDeclSyntax) {
-    let decl = context.popLast()
-    assert(decl is ProtocolDeclSyntax)
-  }
-  
-  override func visitPost(_ node: StructDeclSyntax) {
-    let decl = context.popLast()
-    assert(decl is StructDeclSyntax)
   }
 }

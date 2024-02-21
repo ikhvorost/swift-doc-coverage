@@ -29,7 +29,7 @@ extension String : LocalizedError {
 }
 
 public struct Coverage {
-  let sources: [Source]
+  let urls: [URL]
   let minAccessLevel: AccessLevel
   let output: Output
   
@@ -87,12 +87,11 @@ public struct Coverage {
   }()
   
   public init(paths: [String], skipsHiddenFiles: Bool = true, ignoreFilenameRegex: String = "", minAccessLevel: AccessLevel = .public, output: Output = TerminalOutput()) throws {
-    self.sources = try paths.flatMap {
+    self.urls = try paths.flatMap {
       try Self.files(path: $0, ext: ".swift", skipsHiddenFiles: skipsHiddenFiles, ignoreFilenameRegex: ignoreFilenameRegex)
     }
-    .map { try Source(url: $0) }
     
-    guard sources.count > 0 else {
+    guard urls.count > 0 else {
       throw "Swift files not found."
     }
     
@@ -120,18 +119,22 @@ public struct Coverage {
   
   @discardableResult
   public func report(_ body: ((SourceReport, TimeInterval) -> Void)? = nil) throws -> CoverageReport {
-    precondition(sources.count > 0)
+    precondition(urls.count > 0)
     
     var sourceReports = [SourceReport]()
     
-    sources.forEach { source in
+    try urls.forEach { url in
       let time = Date()
+      
+      let source = try Source(url: url)
       
       guard source.declarations.count > 0 else {
         return
       }
       
-      let declarations = source.declarations.filter { $0.accessLevel.rawValue <= self.minAccessLevel.rawValue }
+      let declarations = source.declarations.filter {
+        $0.accessLevel.rawValue <= self.minAccessLevel.rawValue
+      }
       
       let undocumented: [DeclarationReport] = declarations
         .filter {
@@ -139,7 +142,7 @@ public struct Coverage {
         }
         .map { DeclarationReport(line: $0.line, column: $0.column, name: $0.name) }
       
-      let sourceReport = SourceReport(path: source.url!.absoluteString, totalCount: source.declarations.count, undocumented: undocumented)
+      let sourceReport = SourceReport(path: url.absoluteString, totalCount: source.declarations.count, undocumented: undocumented)
       sourceReports.append(sourceReport)
       
       body?(sourceReport, -time.timeIntervalSinceNow)

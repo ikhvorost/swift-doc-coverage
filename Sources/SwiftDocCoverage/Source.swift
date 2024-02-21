@@ -23,30 +23,24 @@
 
 import Foundation
 import SwiftSyntax
-import SwiftParser
 
 
 public struct Source {
   public let url: URL?
-  public let source: String
+  public let declarations: [Declaration]
   
-  // https://oleb.net/blog/2015/12/lazy-properties-in-structs-swift/
-  public var declarations: [Declaration] {
-    Lazy.var {
-      let sourceFile = Parser.parse(source: source)
-      let converter = SourceLocationConverter(fileName: "", tree: sourceFile)
-      let visitor = Visitor(sourceFile: sourceFile, converter: converter)
-      return visitor.declarations
-    }
+  private init(url: URL?, source: String) {
+    self.url = url
+    let visitor = Visitor(source: source)
+    self.declarations = visitor.declarations
   }
-  
+    
   public init(source: String) {
-    self.url = nil
-    self.source = source
+    self.init(url: nil, source: source)
   }
   
   public init(url: URL) throws {
-    self.url = url
-    self.source = try String(contentsOf: url)
+    let source = try String(contentsOf: url)
+    self.init(url: url, source: source)
   }
 }

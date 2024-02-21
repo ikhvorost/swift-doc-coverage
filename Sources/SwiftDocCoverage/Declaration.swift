@@ -35,28 +35,23 @@ fileprivate struct StringBuilder {
   }
 }
 
-public class Declaration {
-  private let decl: DeclProtocol
-  private let context: [DeclProtocol]
-  
+public struct Declaration {
+  public let comments: [Comment]
+  public let accessLevel: AccessLevel
+  public var keyword: Keyword
+  public let name: String
   public let line: Int
   public let column: Int
-  
-  public var keyword: Keyword { decl.keyword }
-  
-  public private(set) lazy var accessLevel: AccessLevel = { decl.accessLevel }()
-  public private(set) lazy var comments: [Comment] = { decl.comments }()
-  public private(set) lazy var name: String = { buildName() }()
 
   @StringBuilder
-  private func buildName() -> String {
+  private static func buildName(decl: DeclProtocol, path: String?) -> String {
     if decl.keyword != .`init`, decl.keyword != .subscript {
       decl.keyword.rawValue
       " "
     }
     
-    if context.count > 0 {
-      context.map { $0.name.trimmedDescription }.joined(separator: ".")
+    if let path = path {
+      path
       "."
     }
     
@@ -71,9 +66,11 @@ public class Declaration {
     }
   }
   
-  init(decl: DeclProtocol, context: [DeclProtocol], location: SourceLocation) {
-    self.decl = decl
-    self.context = context
+  init(decl: DeclProtocol, path: String?, location: SourceLocation) {
+    self.comments = decl.comments
+    self.accessLevel = decl.accessLevel
+    self.keyword = decl.keyword
+    self.name = Self.buildName(decl: decl, path: path)
     self.line = location.line
     self.column = location.column
   }

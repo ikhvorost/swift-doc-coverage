@@ -24,7 +24,7 @@
 import SwiftSyntax
 
 
-protocol DeclProtocol: SyntaxProtocol {
+protocol DeclProtocol: DeclSyntaxProtocol {
   
   // var attributes: AttributeListSyntax
   var modifiers: DeclModifierListSyntax { get }
