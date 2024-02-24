@@ -152,8 +152,8 @@ struct SwiftDocCoverage: ParsableCommand {
       var urls = [URL]()
       
       let regex: NSRegularExpression? = ignoreFilenameRegex.isEmpty
-      ? nil
-      : try NSRegularExpression(pattern: ignoreFilenameRegex)
+        ? nil
+        : try NSRegularExpression(pattern: ignoreFilenameRegex)
       
       let url = URL(fileURLWithPath: path)
       let resourceKeys = Set<URLResourceKey>([.nameKey, .isDirectoryKey])

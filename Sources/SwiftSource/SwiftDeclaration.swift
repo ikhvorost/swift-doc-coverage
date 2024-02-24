@@ -21,7 +21,19 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+import Foundation
 import SwiftSyntax
+
+fileprivate extension String {
+  func removingNewLines() -> String {
+    guard self.firstIndex(of: "\n") != nil else {
+      return self
+    }
+    return self
+      .replacingOccurrences(of: #"\n"#, with: "", options: .regularExpression)
+      .replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
+  }
+}
 
 
 @resultBuilder
@@ -74,7 +86,7 @@ public struct SwiftDeclaration {
     self.comments = decl.comments
     self.accessLevel = decl.accessLevel
     self.keyword = decl.keyword
-    self.name = Self.buildName(decl: decl, path: path)
+    self.name = Self.buildName(decl: decl, path: path).removingNewLines()
     self.line = location.line
     self.column = location.column
   }
