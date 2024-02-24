@@ -37,7 +37,7 @@ public struct SwiftComment {
     }
   }
   
-  public var hasDoc: Bool {
+  public var isDoc: Bool {
     switch piece {
       case .docLineComment: fallthrough
       case .docBlockComment: return true

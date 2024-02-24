@@ -28,7 +28,6 @@ import SwiftParser
 class Visitor: SyntaxVisitor {
   private var context = [DeclProtocol]()
   private let converter: SourceLocationConverter
-  
   private(set) var declarations = [SwiftDeclaration]()
   
   init(source: String) {

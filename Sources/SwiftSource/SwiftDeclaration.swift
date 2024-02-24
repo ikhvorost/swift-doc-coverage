@@ -42,6 +42,10 @@ public struct SwiftDeclaration {
   public let name: String
   public let line: Int
   public let column: Int
+  
+  public var isDocumented: Bool {
+    comments.first { $0.isDoc } != nil
+  }
 
   @StringBuilder
   private static func buildName(decl: DeclProtocol, path: String?) -> String {

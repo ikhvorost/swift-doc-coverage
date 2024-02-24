@@ -1,6 +1,6 @@
-//  Report.swift
+//  Output.swift
 //
-//  Created by Iurii Khvorost <iurii.khvorost@gmail.com> on 08.09.2022.
+//  Created by Iurii Khvorost <iurii.khvorost@gmail.com> on 25.08.2022.
 //  Copyright © 2022 Iurii Khvorost. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,40 +23,41 @@
 
 import Foundation
 
-struct DeclarationReport: Codable {
-  let line: Int
-  let column: Int
-  let name: String
-}
-
-public struct SourceReport: Codable {
-  let path: String
-  let totalCount: Int
-  let undocumented: [DeclarationReport]
+class Output {
+  let stream: UnsafeMutablePointer<FILE>
   
-  var fileName: String {
-    NSString(string: path).lastPathComponent
+  init(stream: UnsafeMutablePointer<FILE>) {
+    self.stream = stream
   }
   
-  var coverage: Int {
-    precondition(totalCount > 0)
-    return (totalCount - undocumented.count) * 100 / totalCount
+  func write(_ text: String, terminator: String = "\n") {
+    fputs(text, stream)
+    fputs(terminator, stream)
   }
 }
 
-public struct CoverageReport: Codable {
-  public let sources: [SourceReport]
+class TerminalOutput: Output {
   
-  public var totalCount: Int {
-    sources.reduce(0) { $0 + $1.totalCount }
+  init() {
+    super.init(stream: Darwin.stdout)
+  }
+}
+
+class FileOutput: Output {
+  
+  init(path: String) throws {
+    let dirPath = NSString(string: path).deletingLastPathComponent
+    if FileManager.default.fileExists(atPath: dirPath) == false {
+      try FileManager.default.createDirectory(atPath: dirPath, withIntermediateDirectories: true)
+    }
+    
+    guard let file = fopen(path.cString(using: .utf8), "w".cString(using: .utf8)) else {
+      throw "Can't open file."
+    }
+    super.init(stream: file)
   }
   
-  public var totalUndocumentedCount: Int {
-    sources.reduce(0) { $0 + $1.undocumented.count }
-  }
-  
-  var coverage: Int {
-    precondition(totalCount > 0)
-    return (totalCount - totalUndocumentedCount) * 100 / totalCount
+  deinit {
+    fclose(stream)
   }
 }
