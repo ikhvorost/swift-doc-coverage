@@ -43,31 +43,4 @@ public enum SwiftKeyword: String {
   case `subscript`
   case `typealias`
   case `var`
-  
-  init?(token: TokenSyntax) {
-    guard case .keyword(let keyword) = token.tokenKind else {
-      return nil
-    }
-    
-    switch keyword {
-      case .actor: self = .actor
-      case .associatedtype: self = .associatedtype
-      case .case: self = .case
-      case .class: self = .class
-      case .enum: self = .enum
-      case .extension: self = .extension
-      case .func: self = .func
-      //case .import:
-      case .`init`: self = .`init`
-      case .let: self = .let
-      case .macro: self = .macro
-      case .precedencegroup: self = .precedencegroup
-      case .protocol: self = .protocol
-      case .struct: self = .struct
-      case .subscript: self = .subscript
-      case .typealias: self = .typealias
-      case .var: self = .var
-      default: return nil
-    }
-  }
 }

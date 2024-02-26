@@ -97,7 +97,7 @@ struct SwiftDocCoverage: ParsableCommand {
     let sources: [SwiftSource] = try urls.map { url in
       let sourceTime = Date()
       
-      let source = try SwiftSource(url: url)
+      let source = try SwiftSource(fileURL: url)
       
       if report != .json {
         let declarations = source.declarations.filter { $0.accessLevel.rawValue <= minAccessLevel }

@@ -39,8 +39,8 @@ public struct SwiftSource {
     self.init(url: nil, source: source)
   }
   
-  public init(url: URL) throws {
-    let source = try String(contentsOf: url)
-    self.init(url: url, source: source)
+  public init(fileURL: URL) throws {
+    let source = try String(contentsOf: fileURL)
+    self.init(url: fileURL, source: source)
   }
 }

@@ -31,31 +31,32 @@ public enum SwiftAccessLevel: Int {
   case `fileprivate`
   case `private`
   
-  init?(token: TokenSyntax) {
-    guard case .keyword(let keyword) = token.tokenKind else {
-      return nil
-    }
-    
-    switch keyword {
-      case .open: self = .open
-      case .public: self = .public
-      case .internal: self = .internal
-      case .fileprivate: self = .fileprivate
-      case .private: self = .private
-      default: return nil
-    }
-  }
-  
-  init(modifiers: DeclModifierListSyntax) {
+ init(modifiers: DeclModifierListSyntax) {
     for modifier in modifiers {
-      // Skip private(set) etc.
-      guard modifier.detail == nil else {
+      guard modifier.detail == nil, // Skip private(set) etc.
+              case .keyword(let keyword) = modifier.name.tokenKind
+      else {
         continue
       }
       
-      if let accessLevel = SwiftAccessLevel(token: modifier.name) {
-        self = accessLevel
-        return
+      switch keyword {
+        case .open: 
+          self = .open
+          return
+        case .public: 
+          self = .public
+          return
+        case .internal:
+          self = .internal
+          return
+        case .fileprivate:
+          self = .fileprivate
+          return
+        case .private:
+          self = .private
+          return
+        default:
+          break
       }
     }
     self = .internal

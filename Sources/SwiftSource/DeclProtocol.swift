@@ -109,7 +109,9 @@ extension SubscriptDeclSyntax: DeclProtocol {
 }
 
 extension VariableDeclSyntax: DeclProtocol {
-  var keyword: SwiftKeyword { SwiftKeyword(token: bindingSpecifier)! }
+  var keyword: SwiftKeyword {
+    bindingSpecifier.trimmedDescription == "let" ? .let : .var
+  }
   
   var name: TokenSyntax {
     let name = bindings.map { $0.pattern.trimmedDescription }.joined(separator: ",")

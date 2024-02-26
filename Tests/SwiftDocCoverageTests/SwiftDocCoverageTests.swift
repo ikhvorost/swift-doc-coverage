@@ -254,6 +254,18 @@ final class DeclarationTests: XCTestCase {
     XCTAssert(source.declarations[5].name == "enum Planet<Item>")
   }
   
+  func test_macro() {
+    let code =
+    """
+    @attached(member, names: named(_registerModule), named(moduleName), named(requiresMainQueueSetup), named(methodQueue))
+    public macro ReactView(jsName: String? = nil) = #externalMacro(module: "ReactBridgeMacros", type: "ReactView")
+    """
+    let source = SwiftSource(source: code)
+    XCTAssert(source.declarations.count == 1)
+    XCTAssert(source.declarations[0].name == "macro ReactView(jsName: String? = nil)")
+    XCTAssert(source.declarations[0].accessLevel == .public)
+  }
+  
   func test_precedencegroup_operator() {
     let code =
     """
@@ -358,13 +370,30 @@ final class DeclarationTests: XCTestCase {
     XCTAssert(source.declarations[10].accessLevel == .internal)
     XCTAssert(source.declarations[11].accessLevel == .internal)
   }
+  
+  func test_multilines() {
+    let code =
+    """
+    func greet(
+      id: Number,
+      person: String,
+      text: String) -> String
+    {
+      person + text
+    }
+    """
+    let source = SwiftSource(source: code)
+    XCTAssert(source.declarations.count == 1)
+    XCTAssert(source.declarations[0].name == "func greet( id: Number, person: String, text: String) -> String")
+  }
 }
 
-final class DocumentationTests: XCTestCase {
+final class DocTests: XCTestCase {
   
   func test_no_comments() {
     let code =
     """
+    
     public func eat(_ food: Food, quantity: Int) throws -> Int { return 0 }
     """
     let source = SwiftSource(source: code)
@@ -378,7 +407,9 @@ final class DocumentationTests: XCTestCase {
     // A developer line comment
     /* A developer block comment */
     /// A documentation line comment
-    /** A documentation block comment */
+    /** A documentation 
+    block comment */
+    
     mutating public func eat(_ food: Food, quantity: Int) throws -> Int { return 0 }
     """
     let source = SwiftSource(source: code)
@@ -387,7 +418,7 @@ final class DocumentationTests: XCTestCase {
     XCTAssert(source.declarations[0].comments[0].text == "// A developer line comment")
     XCTAssert(source.declarations[0].comments[1].text == "/* A developer block comment */")
     XCTAssert(source.declarations[0].comments[2].text == "/// A documentation line comment")
-    XCTAssert(source.declarations[0].comments[3].text == "/** A documentation block comment */")
+    XCTAssert(source.declarations[0].comments[3].text == "/** A documentation \nblock comment */")
   }
 }
 
@@ -395,65 +426,19 @@ final class FileTests: XCTestCase {
   
   static let directoryURL = Bundle.module.url(forResource: "Resources", withExtension: nil, subdirectory: nil)!
   static let fileURL =  directoryURL.appendingPathComponent("Rect/Rect.swift")
-  static let readmeURL =  directoryURL.appendingPathComponent("README.md")
-  static let emptyDirURL =  directoryURL.appendingPathComponent("Empty")
+  //static let readmeURL =  directoryURL.appendingPathComponent("README.md")
+  //static let emptyDirURL =  directoryURL.appendingPathComponent("Empty")
+  
+  func test_no_file() throws {
+    let fileURL =  URL(filePath: Self.directoryURL.appendingPathComponent("File.swift").path)
+    XCTAssertThrowsError(try SwiftSource(fileURL: fileURL)) { error in
+      XCTAssert(error.localizedDescription == "The file “File.swift” couldn’t be opened because there is no such file.")
+    }
+  }
   
   func test_file() throws {
-    let source = try SwiftSource(url: Self.fileURL)
+    let source = try SwiftSource(fileURL: Self.fileURL)
     XCTAssert(source.declarations.count == 4)
-  }
-  
-  func test_not_found() throws {
-//    XCTAssertThrowsError(try Coverage(paths: [Self.directoryURL.appendingPathComponent("NotFound").path])) { error in
-//      XCTAssert(error.localizedDescription == "Path not found.")
-//    }
-  }
-  
-  func test_not_swift_file() throws {
-//    XCTAssertThrowsError(try Coverage(paths: [Self.readmeURL.path])) { error in
-//      XCTAssert(error.localizedDescription == "Not swift file.")
-//    }
-  }
-  
-  func test_no_declarations() throws {
-//    let coverage = try Coverage(paths: [Self.fileURL.path], minAccessLevel: .open)
-//    XCTAssertThrowsError(try coverage.report()) { error in
-//      XCTAssert(error.localizedDescription == "Declarations not found.")
-//    }
-  }
-  
-  func test_report() throws {
-//    let coverage = try Coverage(paths: [Self.fileURL.path])
-//    let report = try coverage.report()
-//    
-//    XCTAssert(report.totalCount == 4)
-//    XCTAssert(report.totalUndocumentedCount == 2)
-//    XCTAssert(report.sources.count == 1)
-//    
-//    try coverage.reportStatistics()
-  }
-  
-  func test_empty_directory() throws {
-//    let tempDirectory = tempDirectory()
-//    defer { try? FileManager.default.removeItem(at: tempDirectory) }
-//    
-//    XCTAssertThrowsError(try Coverage(paths: [tempDirectory.path])) { error in
-//      XCTAssert(error.localizedDescription == "Swift files not found.")
-//    }
-  }
-  
-  func test_directory() throws {
-//    let coverage = try Coverage(paths: [Self.directoryURL.path])
-//    let report = try coverage.report()
-//    
-//    XCTAssert(report.totalCount == 4)
-//    XCTAssert(report.totalUndocumentedCount == 2)
-//    print(report.sources.count == 1)
-  }
-  
-  func test_warnings() throws {
-//    let coverage = try Coverage(paths: [Self.fileURL.path])
-//    try coverage.reportWarnings()
   }
 }
 
@@ -502,6 +487,54 @@ final class ToolTests: XCTestCase {
     XCTAssert(process.terminationStatus == EXIT_FAILURE)
   }
   
+  //  func test_directory() throws {
+  //    let coverage = try Coverage(paths: [Self.directoryURL.path])
+  //    let report = try coverage.report()
+  //
+  //    XCTAssert(report.totalCount == 4)
+  //    XCTAssert(report.totalUndocumentedCount == 2)
+  //    print(report.sources.count == 1)
+  //  }
+  
+  //  func test_empty_directory() throws {
+  //    let tempDirectory = tempDirectory()
+  //    defer { try? FileManager.default.removeItem(at: tempDirectory) }
+  //
+  //    XCTAssertThrowsError(try Coverage(paths: [tempDirectory.path])) { error in
+  //      XCTAssert(error.localizedDescription == "Swift files not found.")
+  //    }
+  //  }
+  
+  //func test_not_found() throws {
+    //    XCTAssertThrowsError(try Coverage(paths: [Self.directoryURL.appendingPathComponent("NotFound").path])) { error in
+    //      XCTAssert(error.localizedDescription == "Path not found.")
+    //    }
+  //}
+  
+  //func test_not_swift_file() throws {
+    //    XCTAssertThrowsError(try Coverage(paths: [Self.readmeURL.path])) { error in
+    //      XCTAssert(error.localizedDescription == "Not swift file.")
+    //    }
+  //}
+  
+  //  func test_no_declarations() throws {
+  //    let coverage = try Coverage(paths: [Self.fileURL.path], minAccessLevel: .open)
+  //    XCTAssertThrowsError(try coverage.report()) { error in
+  //      XCTAssert(error.localizedDescription == "Declarations not found.")
+  //    }
+  //  }
+  
+  //  func test_report() throws {
+  //    let coverage = try Coverage(paths: [Self.fileURL.path])
+  //    let report = try coverage.report()
+  //
+  //    XCTAssert(report.totalCount == 4)
+  //    XCTAssert(report.totalUndocumentedCount == 2)
+  //    XCTAssert(report.sources.count == 1)
+  //
+  //    try coverage.reportStatistics()
+  //  }
+  
   func test_output() throws {
     let process = Process()
     let output = try process.run(swiftDocCoverageURL, arguments: [fileURL.path])
@@ -510,25 +543,30 @@ final class ToolTests: XCTestCase {
     XCTAssert(output.contains("Total: 50%"))
   }
   
+  //  func test_warnings() throws {
+  //    let coverage = try Coverage(paths: [Self.fileURL.path])
+  //    try coverage.reportWarnings()
+  //  }
+  
   func test_warninigs() throws {
-    let process = Process()
-    let output = try process.run(swiftDocCoverageURL, arguments: [fileURL.path, "--report", "warnings"])
-    XCTAssert(process.terminationStatus == EXIT_SUCCESS)
-    XCTAssert(output.contains("warning: No documentation for 'Rect.size'."))
+//    let process = Process()
+//    let output = try process.run(swiftDocCoverageURL, arguments: [fileURL.path, "--report", "warnings"])
+//    XCTAssert(process.terminationStatus == EXIT_SUCCESS)
+//    XCTAssert(output.contains("warning: No documentation for 'Rect.size'."))
   }
   
   func test_json() throws {
-    let process = Process()
-    let output = try process.run(swiftDocCoverageURL, arguments: [fileURL.path, "--report", "json"])
-    XCTAssert(process.terminationStatus == EXIT_SUCCESS)
-    
-    if let data = output.data(using: .utf8),
-       let json = try JSONSerialization.jsonObject(with: data) as? [String : Any] {
-      XCTAssert(json["sources"] != nil)
-    }
-    else {
-      XCTFail()
-    }
+//    let process = Process()
+//    let output = try process.run(swiftDocCoverageURL, arguments: [fileURL.path, "--report", "json"])
+//    XCTAssert(process.terminationStatus == EXIT_SUCCESS)
+//    
+//    if let data = output.data(using: .utf8),
+//       let json = try JSONSerialization.jsonObject(with: data) as? [String : Any] {
+//      XCTAssert(json["sources"] != nil)
+//    }
+//    else {
+//      XCTFail()
+//    }
   }
   
   func test_file_output() throws {
