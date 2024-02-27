@@ -24,34 +24,26 @@
 import SwiftSyntax
 
 
-public struct SwiftComment {
-  private let piece: TriviaPiece
-  
-  public var text: String {
-    switch piece {
-      case .lineComment(let text): return text
-      case .blockComment(let text): return text
-      case .docLineComment(let text): return text
-      case .docBlockComment(let text): return text
-      default: return ""
-    }
-  }
-  
-  public var isDoc: Bool {
-    switch piece {
-      case .docLineComment: fallthrough
-      case .docBlockComment: return true
-      default: return false
-    }
-  }
+public struct SwiftComment: Decodable {
+  public let text: String
+  public var isDoc: Bool
   
   init?(piece: TriviaPiece) {
     switch piece {
-      case .lineComment: fallthrough
-      case .blockComment: fallthrough
-      case .docLineComment: fallthrough
-      case .docBlockComment: self.piece = piece
-      default: return nil
+      case .lineComment(let value):
+        text = value
+        isDoc = false
+      case .blockComment(let value):
+        text = value
+        isDoc = false
+      case .docLineComment(let value):
+        text = value
+        isDoc = true
+      case .docBlockComment(let value):
+        text = value
+        isDoc = true
+      default:
+        return nil
     }
   }
 }

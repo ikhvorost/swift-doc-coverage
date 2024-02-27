@@ -47,7 +47,7 @@ fileprivate struct StringBuilder {
   }
 }
 
-public struct SwiftDeclaration {
+public struct SwiftDeclaration: Decodable {
   public let comments: [SwiftComment]
   public let accessLevel: SwiftAccessLevel
   public var keyword: SwiftKeyword

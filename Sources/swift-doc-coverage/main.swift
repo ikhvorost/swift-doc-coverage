@@ -54,10 +54,10 @@ struct SwiftDocCoverage: ParsableCommand {
   
   static var configuration = CommandConfiguration(
     abstract: "Generates documentation coverage statistics for Swift files.",
-    version: "1.0.0"
+    version: "1.1.0"
   )
   
-  @Argument(help: "One or more paths to a directory containing Swift files.")
+  @Argument(help: "One or more paths to directories or Swift files.")
   var inputs: [String]
   
   @Option(name: .shortAndLong, help: "An option to skip hidden files.")
@@ -75,11 +75,12 @@ struct SwiftDocCoverage: ParsableCommand {
   @Option(name: .shortAndLong, help: "The file path for generated report.")
   var output: String?
   
+  var sources: [SwiftSource] = []
+  
   mutating func run() throws {
-    var out: Output = TerminalOutput()
-    if let path = output {
-      out = try FileOutput(path: path)
-    }
+    let out: Output = output != nil
+      ? try FileOutput(path: output!)
+      : TerminalOutput()
     
     let urls = try inputs.flatMap {
       try Self.files(path: $0, ext: ".swift", skipsHiddenFiles: skipsHiddenFiles, ignoreFilenameRegex: ignoreFilenameRegex)
@@ -94,7 +95,7 @@ struct SwiftDocCoverage: ParsableCommand {
     let minAccessLevel = minimumAccessLevel.accessLevel.rawValue
     
     // Sources
-    let sources: [SwiftSource] = try urls.map { url in
+    sources = try urls.map { url in
       let sourceTime = Date()
       
       let source = try SwiftSource(fileURL: url)
@@ -142,7 +143,13 @@ struct SwiftDocCoverage: ParsableCommand {
     }
   }
   
-  static func files(path: String, ext: String, skipsHiddenFiles: Bool, ignoreFilenameRegex: String) throws -> [URL]  {
+  static func run(_ arguments: [String]? = nil) throws -> Self {
+    var cmd = try Self.parse(arguments)
+    try cmd.run()
+    return cmd
+  }
+  
+  static func files(path: String, ext: String, skipsHiddenFiles: Bool, ignoreFilenameRegex: String) throws -> [URL] {
     var isDirectory: ObjCBool = false
     guard FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory) else {
       throw "Path not found."
