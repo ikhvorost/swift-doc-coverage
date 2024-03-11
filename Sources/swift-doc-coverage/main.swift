@@ -26,9 +26,18 @@ import ArgumentParser
 import SwiftSource
 
 
-extension String : LocalizedError {
-  public var errorDescription: String? { self }
+enum Errors: String {
+  case cantOpenFile = "Can't open file."
+  case filesNotFound = "Swift files not found."
+  case declarationsNotFound = "Swift declarations not found."
+  case pathNotFound = "Path not found."
+  case notSwiftFile = "Not swift file."
 }
+
+extension Errors: LocalizedError {
+  public var errorDescription: String? { self.rawValue }
+}
+
 
 enum AccessLevel: String, ExpressibleByArgument {
   case open, `public`, `internal`, `fileprivate`, `private`
@@ -75,24 +84,39 @@ struct SwiftDocCoverage: ParsableCommand {
   @Option(name: .shortAndLong, help: "The file path for generated report.")
   var output: String?
   
+  private enum CodingKeys: String, CodingKey {
+    case inputs, skipsHiddenFiles, ignoreFilenameRegex, minimumAccessLevel, report, output
+  }
+  
   var sources: [SwiftSource] = []
+  var out: Output? = nil
   
   mutating func run() throws {
-    let out: Output = output != nil
-      ? try FileOutput(path: output!)
-      : TerminalOutput()
+    // Output
+    if out == nil {
+      if let output = output {
+        if let file = try FileOutput(path: output) {
+          out = file
+        }
+        else {
+          throw Errors.cantOpenFile
+        }
+      }
+      else {
+        out = TerminalOutput()
+      }
+    }
     
     let urls = try inputs.flatMap {
       try Self.files(path: $0, ext: ".swift", skipsHiddenFiles: skipsHiddenFiles, ignoreFilenameRegex: ignoreFilenameRegex)
     }
     
     guard urls.count > 0 else {
-      throw "Swift files not found."
+      throw Errors.filesNotFound
     }
     
     let totalTime = Date()
     var i = 0
-    let minAccessLevel = minimumAccessLevel.accessLevel.rawValue
     
     // Sources
     sources = try urls.map { url in
@@ -101,7 +125,7 @@ struct SwiftDocCoverage: ParsableCommand {
       let source = try SwiftSource(fileURL: url)
       
       if report != .json {
-        let declarations = source.declarations.filter { $0.accessLevel.rawValue <= minAccessLevel }
+        let declarations = source.declarations(level: minimumAccessLevel.accessLevel)
         if declarations.count > 0 {
           i += 1
           let filePath = url.absoluteString
@@ -118,9 +142,9 @@ struct SwiftDocCoverage: ParsableCommand {
     }
     
     if report == .coverage {
-      let declarations = sources.flatMap { $0.declarations.filter { $0.accessLevel.rawValue <= minAccessLevel } }
+      let declarations = sources.flatMap { $0.declarations(level: minimumAccessLevel.accessLevel) }
       guard declarations.count > 0 else {
-        throw "Swift declarations not found."
+        throw Errors.declarationsNotFound
       }
       
       let undocumented = declarations.filter { $0.isDocumented == false }
@@ -129,7 +153,7 @@ struct SwiftDocCoverage: ParsableCommand {
       let documentedCount = totalCount - undocumented.count
       let coverage = documentedCount * 100 / totalCount
       
-      out.write("\nTotal: \(coverage)% [\(documentedCount)/\(totalCount)] (\(Self.string(from: -totalTime.timeIntervalSinceNow)))")
+      out?.write("\nTotal: \(coverage)% [\(documentedCount)/\(totalCount)] (\(Self.string(from: -totalTime.timeIntervalSinceNow)))")
     }
     else if report == .json {
       print(sources)
@@ -143,8 +167,9 @@ struct SwiftDocCoverage: ParsableCommand {
     }
   }
   
-  static func run(_ arguments: [String]? = nil) throws -> Self {
+  static func run(output: Output? = nil, _ arguments: String...) throws -> Self {
     var cmd = try Self.parse(arguments)
+    cmd.out = output
     try cmd.run()
     return cmd
   }
@@ -152,7 +177,7 @@ struct SwiftDocCoverage: ParsableCommand {
   static func files(path: String, ext: String, skipsHiddenFiles: Bool, ignoreFilenameRegex: String) throws -> [URL] {
     var isDirectory: ObjCBool = false
     guard FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory) else {
-      throw "Path not found."
+      throw Errors.pathNotFound
     }
     
     if isDirectory.boolValue {
@@ -178,7 +203,7 @@ struct SwiftDocCoverage: ParsableCommand {
           // Skip by regex
           if let regex = regex {
             let fileName = fileURL.lastPathComponent
-            let range = NSRange(location: 0, length: fileName.utf16.count)
+            let range = NSRange(fileName.startIndex..., in: fileName)
             if regex.firstMatch(in: fileName, range: range) != nil {
               continue
             }
@@ -191,7 +216,7 @@ struct SwiftDocCoverage: ParsableCommand {
     }
     
     guard path.hasSuffix(ext) else {
-      throw "Not swift file."
+      throw Errors.notSwiftFile
     }
     let url = URL(fileURLWithPath: path)
     return [url]
@@ -222,7 +247,7 @@ struct SwiftDocCoverage: ParsableCommand {
     return time
   }
   
-  static func coverage(i: Int, time: Date, filePath: String, declarations: [SwiftDeclaration], out: Output) {
+  static func coverage(i: Int, time: Date, filePath: String, declarations: [SwiftDeclaration], out: Output?) {
     assert(declarations.count > 0)
     
     let undocumented = declarations.filter { $0.isDocumented == false }
@@ -231,26 +256,26 @@ struct SwiftDocCoverage: ParsableCommand {
     let documentedCount = totalCount - undocumented.count
     let coverage = documentedCount * 100 / totalCount
     
-    out.write("\(i)) \(filePath): \(coverage)% [\(documentedCount)/\(totalCount)] (\(string(from: -time.timeIntervalSinceNow)))")
+    out?.write("\(i)) \(filePath): \(coverage)% [\(documentedCount)/\(totalCount)] (\(string(from: -time.timeIntervalSinceNow)))")
     
     if undocumented.count > 0 {
       let fileName = NSString(string: filePath).lastPathComponent
       
-      out.write("Undocumented:")
+      out?.write("Undocumented:")
       undocumented.forEach {
-        out.write("<\(fileName):\($0.line):\($0.column)> \($0.name)")
+        out?.write("<\(fileName):\($0.line):\($0.column)> \($0.name)")
       }
-      out.write("\n", terminator: "")
+      out?.write("\n", terminator: "")
     }
   }
   
-  static func warnings(filePath: String, declarations: [SwiftDeclaration], out: Output) {
+  static func warnings(filePath: String, declarations: [SwiftDeclaration], out: Output?) {
     assert(declarations.count > 0)
     
     declarations
       .filter { $0.isDocumented == false }
       .forEach {
-        out.write("\(filePath):\($0.line):\($0.column): warning: No documentation for '\($0.name)'.")
+        out?.write("\(filePath):\($0.line):\($0.column): warning: No documentation for '\($0.name)'.")
       }
   }
 }

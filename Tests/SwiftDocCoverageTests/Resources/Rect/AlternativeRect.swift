@@ -1,8 +1,8 @@
 import Foundation
 
 struct AlternativeRect {
-  var origin = Point()
-  var size = Size()
+  fileprivate var origin = Point()
+  private var size = Size()
   var center: Point {
     get {
       let centerX = origin.x + (size.width / 2)

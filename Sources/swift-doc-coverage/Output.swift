@@ -23,36 +23,49 @@
 
 import Foundation
 
+
 class Output {
-  let stream: UnsafeMutablePointer<FILE>
+  var stream: UnsafeMutablePointer<FILE>? = nil
+  var buffer: String = ""
+  
+  init() {
+  }
   
   init(stream: UnsafeMutablePointer<FILE>) {
     self.stream = stream
   }
   
   func write(_ text: String, terminator: String = "\n") {
-    fputs(text, stream)
-    fputs(terminator, stream)
+    if let stream {
+      fputs(text, stream)
+      fputs(terminator, stream)
+    }
+    else {
+      self.buffer.append(text)
+      self.buffer.append(terminator)
+    }
   }
 }
 
 class TerminalOutput: Output {
   
-  init() {
+  override init() {
     super.init(stream: Darwin.stdout)
   }
 }
 
 class FileOutput: Output {
   
-  init(path: String) throws {
+  init?(path: String) throws {
     let dirPath = NSString(string: path).deletingLastPathComponent
     if FileManager.default.fileExists(atPath: dirPath) == false {
       try FileManager.default.createDirectory(atPath: dirPath, withIntermediateDirectories: true)
     }
     
-    guard let file = fopen(path.cString(using: .utf8), "w".cString(using: .utf8)) else {
-      throw "Can't open file."
+    let fileName = path.cString(using: .utf8)
+    let mode = "w".cString(using: .utf8)
+    guard let file = fopen(fileName, mode) else {
+      return nil
     }
     super.init(stream: file)
   }

@@ -1,6 +1,8 @@
 import Foundation
 
+/// Doc
 struct CompactRect {
+  /** Doc  */
   var origin = Point()
   var size = Size()
   var center: Point {

@@ -43,4 +43,8 @@ public struct SwiftSource: Decodable {
     let source = try String(contentsOf: fileURL)
     self.init(url: fileURL, source: source)
   }
+  
+  public func declarations(level: SwiftAccessLevel) -> [SwiftDeclaration] {
+    declarations.filter { $0.accessLevel.rawValue <= level.rawValue }
+  }
 }
