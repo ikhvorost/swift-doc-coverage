@@ -491,6 +491,21 @@ final class SwiftDocCoverageTests: XCTestCase {
     XCTAssert(cmd.sources[0].declarations(level: .private).count == 4)
   }
   
+  func test_warnings() throws {
+    let output = Output()
+    _ = try SwiftDocCoverage.run(output: output, rectFileURL.path, "--report", "warnings")
+    XCTAssert(output.buffer.contains("Rect.swift:9:3: warning: No documentation for 'var Rect.size'.") == true)
+    XCTAssert(output.buffer.contains("Rect.swift:12:3: warning: No documentation for 'var Rect.center'.") == true)
+  }
+  
+  func test_json() throws {
+    let output = Output()
+    _ = try SwiftDocCoverage.run(output: output, rectFileURL.path, "--report", "json")
+    let sources = try JSONDecoder().decode([SwiftSource].self, from: output.buffer.data(using: .utf8)!)
+    XCTAssert(sources.count == 1)
+    XCTAssert(sources[0].declarations.count == 4)
+  }
+  
   func test_file() throws {
     let cmd = try SwiftDocCoverage.run(rectFileURL.path)
     XCTAssert(cmd.sources.count == 1)

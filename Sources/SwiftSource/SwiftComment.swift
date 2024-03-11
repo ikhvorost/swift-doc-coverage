@@ -24,7 +24,7 @@
 import SwiftSyntax
 
 
-public struct SwiftComment: Decodable {
+public struct SwiftComment: Codable {
   public let text: String
   public var isDoc: Bool
   

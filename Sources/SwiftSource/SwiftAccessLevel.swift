@@ -24,7 +24,7 @@
 import SwiftSyntax
 
 
-public enum SwiftAccessLevel: Int, Decodable {
+public enum SwiftAccessLevel: Int, Codable {
   case `open`
   case `public`
   case `internal`

@@ -25,7 +25,7 @@ import Foundation
 import SwiftSyntax
 
 
-public struct SwiftSource: Decodable {
+public struct SwiftSource: Codable {
   public let url: URL?
   public let declarations: [SwiftDeclaration]
   

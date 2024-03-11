@@ -116,7 +116,7 @@ struct SwiftDocCoverage: ParsableCommand {
     }
     
     let totalTime = Date()
-    var i = 0
+    var index = 0
     
     // Sources
     sources = try urls.map { url in
@@ -127,10 +127,10 @@ struct SwiftDocCoverage: ParsableCommand {
       if report != .json {
         let declarations = source.declarations(level: minimumAccessLevel.accessLevel)
         if declarations.count > 0 {
-          i += 1
+          index += 1
           let filePath = url.absoluteString
           if report == .coverage {
-            Self.coverage(i: i, time: sourceTime, filePath: filePath, declarations: declarations, out: out)
+            Self.coverage(index: index, time: sourceTime, filePath: filePath, declarations: declarations, out: out)
           }
           else if report == .warnings {
             Self.warnings(filePath: filePath, declarations: declarations, out: out)
@@ -156,14 +156,13 @@ struct SwiftDocCoverage: ParsableCommand {
       out?.write("\nTotal: \(coverage)% [\(documentedCount)/\(totalCount)] (\(Self.string(from: -totalTime.timeIntervalSinceNow)))")
     }
     else if report == .json {
-      print(sources)
-//      let encoder = JSONEncoder()
-//      encoder.outputFormatting = .prettyPrinted
-//
-//      let data = try encoder.encode(sources)
-//      let json = String(data: data, encoding: .utf8)!
-//
-//      output.write(json)
+      let encoder = JSONEncoder()
+      encoder.outputFormatting = .prettyPrinted
+
+      let data = try encoder.encode(sources)
+      let json = String(data: data, encoding: .utf8)!
+
+      out?.write(json)
     }
   }
   
@@ -247,7 +246,7 @@ struct SwiftDocCoverage: ParsableCommand {
     return time
   }
   
-  static func coverage(i: Int, time: Date, filePath: String, declarations: [SwiftDeclaration], out: Output?) {
+  static func coverage(index: Int, time: Date, filePath: String, declarations: [SwiftDeclaration], out: Output?) {
     assert(declarations.count > 0)
     
     let undocumented = declarations.filter { $0.isDocumented == false }
@@ -256,7 +255,7 @@ struct SwiftDocCoverage: ParsableCommand {
     let documentedCount = totalCount - undocumented.count
     let coverage = documentedCount * 100 / totalCount
     
-    out?.write("\(i)) \(filePath): \(coverage)% [\(documentedCount)/\(totalCount)] (\(string(from: -time.timeIntervalSinceNow)))")
+    out?.write("\(index)) \(filePath): \(coverage)% [\(documentedCount)/\(totalCount)] (\(string(from: -time.timeIntervalSinceNow)))")
     
     if undocumented.count > 0 {
       let fileName = NSString(string: filePath).lastPathComponent

@@ -24,7 +24,7 @@
 import SwiftSyntax
 
 
-public enum SwiftKeyword: String, Decodable {
+public enum SwiftKeyword: String, Codable {
   case actor
   case `associatedtype`
   case `case`
