@@ -37,14 +37,14 @@ class Visitor: SyntaxVisitor {
     walk(sourceFile)
   }
   
-  func append(decl: DeclProtocol) {
+  func append(decl: DeclProtocol, accessLevel: SwiftAccessLevel? = nil) {
     let startLocation = decl.startLocation(converter: converter, afterLeadingTrivia: true)
     
     let path: String? = context.count > 0
       ? context.map { $0.name.trimmedDescription }.joined(separator: ".")
       : nil
     
-    let declaration = SwiftDeclaration(decl: decl, path: path, location: startLocation)
+    let declaration = SwiftDeclaration(decl: decl, accessLevel: accessLevel, path: path, location: startLocation)
     declarations.append(declaration)
   }
   
@@ -147,7 +147,9 @@ class Visitor: SyntaxVisitor {
   }
   
   override func visit(_ node: EnumCaseDeclSyntax) -> SyntaxVisitorContinueKind {
-    append(decl: node)
+    let enumDecl = context.last as? EnumDeclSyntax
+    assert(enumDecl != nil)
+    append(decl: node, accessLevel: enumDecl?.accessLevel)
     return .skipChildren
   }
   

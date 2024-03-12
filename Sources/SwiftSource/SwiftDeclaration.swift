@@ -82,9 +82,9 @@ public struct SwiftDeclaration: Codable {
     }
   }
   
-  init(decl: DeclProtocol, path: String?, location: SourceLocation) {
+  init(decl: DeclProtocol, accessLevel: SwiftAccessLevel?, path: String?, location: SourceLocation) {
     self.comments = decl.comments
-    self.accessLevel = decl.accessLevel
+    self.accessLevel = accessLevel ?? decl.accessLevel
     self.keyword = decl.keyword
     self.name = Self.buildName(decl: decl, path: path).removingNewLines()
     self.line = location.line

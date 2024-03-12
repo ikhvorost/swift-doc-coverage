@@ -73,7 +73,7 @@ struct SwiftDocCoverage: ParsableCommand {
   var skipsHiddenFiles: Bool = true
   
   @Option(name: .shortAndLong, help: "Skip source code files with file paths that match the given regular expression.")
-  var ignoreFilenameRegex: String = ""
+  var ignoreRegex: String = ""
   
   @Option(name: .shortAndLong, help: "The minimum access level of the symbols considered for coverage statistics: \(AccessLevel.open), \(AccessLevel.public), \(AccessLevel.internal), \(AccessLevel.fileprivate), \(AccessLevel.private).")
   var minimumAccessLevel: AccessLevel = .public
@@ -85,7 +85,7 @@ struct SwiftDocCoverage: ParsableCommand {
   var output: String?
   
   private enum CodingKeys: String, CodingKey {
-    case inputs, skipsHiddenFiles, ignoreFilenameRegex, minimumAccessLevel, report, output
+    case inputs, skipsHiddenFiles, ignoreRegex, minimumAccessLevel, report, output
   }
   
   var sources: [SwiftSource] = []
@@ -108,7 +108,7 @@ struct SwiftDocCoverage: ParsableCommand {
     }
     
     let urls = try inputs.flatMap {
-      try Self.files(path: $0, ext: ".swift", skipsHiddenFiles: skipsHiddenFiles, ignoreFilenameRegex: ignoreFilenameRegex)
+      try Self.files(path: $0, ext: ".swift", skipsHiddenFiles: skipsHiddenFiles, ignoreRegex: ignoreRegex)
     }
     
     guard urls.count > 0 else {
@@ -173,7 +173,7 @@ struct SwiftDocCoverage: ParsableCommand {
     return cmd
   }
   
-  static func files(path: String, ext: String, skipsHiddenFiles: Bool, ignoreFilenameRegex: String) throws -> [URL] {
+  static func files(path: String, ext: String, skipsHiddenFiles: Bool, ignoreRegex: String) throws -> [URL] {
     var isDirectory: ObjCBool = false
     guard FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory) else {
       throw Errors.pathNotFound
@@ -182,9 +182,9 @@ struct SwiftDocCoverage: ParsableCommand {
     if isDirectory.boolValue {
       var urls = [URL]()
       
-      let regex: NSRegularExpression? = ignoreFilenameRegex.isEmpty
+      let regex: NSRegularExpression? = ignoreRegex.isEmpty
         ? nil
-        : try NSRegularExpression(pattern: ignoreFilenameRegex)
+        : try NSRegularExpression(pattern: ignoreRegex)
       
       let url = URL(fileURLWithPath: path)
       let resourceKeys = Set<URLResourceKey>([.nameKey, .isDirectoryKey])
@@ -201,9 +201,8 @@ struct SwiftDocCoverage: ParsableCommand {
           
           // Skip by regex
           if let regex = regex {
-            let fileName = fileURL.lastPathComponent
-            let range = NSRange(fileName.startIndex..., in: fileName)
-            if regex.firstMatch(in: fileName, range: range) != nil {
+            let path = fileURL.path
+            if regex.firstMatch(in: path, range: NSRange(path.startIndex..., in: path)) != nil {
               continue
             }
           }

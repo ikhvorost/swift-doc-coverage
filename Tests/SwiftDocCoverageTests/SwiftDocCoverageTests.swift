@@ -239,7 +239,7 @@ final class SourceCodeTests: XCTestCase {
   func test_enum() {
     let code =
     """
-    enum CompassPoint {
+    public enum CompassPoint {
       case north, south
       case east
       case west
@@ -249,12 +249,24 @@ final class SourceCodeTests: XCTestCase {
     """
     let source = SwiftSource(source: code)
     XCTAssert(source.declarations.count == 6)
+    
     XCTAssert(source.declarations[0].name == "enum CompassPoint")
+    XCTAssert(source.declarations[0].accessLevel == .public)
+    
     XCTAssert(source.declarations[1].name == "case CompassPoint.north,south")
+    XCTAssert(source.declarations[1].accessLevel == .public)
+    
     XCTAssert(source.declarations[2].name == "case CompassPoint.east")
+    XCTAssert(source.declarations[2].accessLevel == .public)
+    
     XCTAssert(source.declarations[3].name == "case CompassPoint.west")
+    XCTAssert(source.declarations[3].accessLevel == .public)
+    
     XCTAssert(source.declarations[4].name == "case CompassPoint.upc(Int, Int, Int, Int)")
+    XCTAssert(source.declarations[4].accessLevel == .public)
+    
     XCTAssert(source.declarations[5].name == "enum Planet<Item>")
+    XCTAssert(source.declarations[5].accessLevel == .internal)
   }
   
   func test_macro() {
@@ -496,7 +508,7 @@ final class SwiftDocCoverageTests: XCTestCase {
   }
   
   func test_ignore_filename_regex() throws {
-    let cmd = try SwiftDocCoverage.run(resourcesUrl.path, "--ignore-filename-regex", "Rect.swift")
+    let cmd = try SwiftDocCoverage.run(resourcesUrl.path, "--ignore-regex", "Rect.swift")
     XCTAssert(cmd.sources.count == 2)
     
     XCTAssert(cmd.sources[0].url?.lastPathComponent == "Size.swift")
