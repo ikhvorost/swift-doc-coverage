@@ -10,6 +10,11 @@ func createTempDirectory() -> URL {
   return url
 }
 
+let resourcesUrl = Bundle.module.url(forResource: "Resources", withExtension: nil, subdirectory: nil)!
+let rectUrl = Bundle.module.url(forResource: "Rect", withExtension: "swift", subdirectory: "Resources/Rect")!
+let sizeUrl = Bundle.module.url(forResource: "Size", withExtension: "swift", subdirectory: "Resources")!
+let readmeUrl = Bundle.module.url(forResource: "README", withExtension: "md", subdirectory: "Resources")!
+
 final class SourceCodeTests: XCTestCase {
   
  func test_typealias() {
@@ -420,29 +425,19 @@ final class SourceCodeTests: XCTestCase {
 final class SourceFileTests: XCTestCase {
   
   func test_no_file() {
-    let directoryURL = Bundle.module.url(forResource: "Resources", withExtension: nil, subdirectory: nil)!
-    let fileURL = directoryURL.appendingPathComponent("File.swift")
+    let fileURL = resourcesUrl.appendingPathComponent("File.swift")
     XCTAssertThrowsError(try SwiftSource(fileURL: fileURL)) { error in
       XCTAssert(error.localizedDescription == "The file “File.swift” couldn’t be opened because there is no such file.")
     }
   }
   
   func test_file() throws {
-    let fileURL = Bundle.module.url(forResource: "Rect", withExtension: "swift", subdirectory: "Resources/Rect")!
-    let source = try SwiftSource(fileURL: fileURL)
-    XCTAssert(source.declarations.count == 4)
+    let source = try SwiftSource(fileURL: rectUrl)
+    XCTAssert(source.declarations.count == 5)
   }
 }
 
 final class SwiftDocCoverageTests: XCTestCase {
-  
-  lazy var executableURL: URL = {
-    Bundle(for: Self.self).bundleURL.deletingLastPathComponent().appendingPathComponent("swift-doc-coverage")
-  }()
-  
-  let rectFileURL = Bundle.module.url(forResource: "Rect", withExtension: "swift", subdirectory: "Resources/Rect")!
-  let compactRectFileURL = Bundle.module.url(forResource: "CompactRect", withExtension: "swift", subdirectory: "Resources/Rect")!
-  let alternativeRectFileURL = Bundle.module.url(forResource: "AlternativeRect", withExtension: "swift", subdirectory: "Resources/Rect")!
   
   func test_no_params() throws {
     XCTAssertThrowsError(try SwiftDocCoverage.run()) { error in
@@ -465,79 +460,101 @@ final class SwiftDocCoverageTests: XCTestCase {
     }
   }
   
-  func test_access_levels() throws {
-    XCTAssertThrowsError(try SwiftDocCoverage.run(rectFileURL.path, "--minimum-access-level", "open")) { error in
+  func test_not_swift_file() throws {
+    XCTAssertThrowsError(try SwiftDocCoverage.run(readmeUrl.path)) { error in
+      XCTAssert(error.localizedDescription == Errors.notSwiftFile.rawValue)
+    }
+  }
+  
+  func test_declarations_not_found() throws {
+    XCTAssertThrowsError(try SwiftDocCoverage.run(sizeUrl.path, "--minimum-access-level", "open")) { error in
       XCTAssert(error.localizedDescription == Errors.declarationsNotFound.rawValue)
     }
-    
-    var cmd = try SwiftDocCoverage.run(rectFileURL.path, "--minimum-access-level", "public")
+  }
+  
+  func test_access_levels() throws {
+    var cmd = try SwiftDocCoverage.run(rectUrl.path, "--minimum-access-level", "open")
     XCTAssert(cmd.sources.count == 1)
-    XCTAssert(cmd.sources[0].declarations.count == 4)
-    XCTAssert(cmd.sources[0].declarations(level: .public).count == 4)
+    XCTAssert(cmd.sources[0].declarations.count == 5)
+    XCTAssert(cmd.sources[0].declarations(level: .open).count == 1)
     
-    cmd = try SwiftDocCoverage.run(compactRectFileURL.path, "--minimum-access-level", "internal")
+    cmd = try SwiftDocCoverage.run(rectUrl.path, "--minimum-access-level", "public")
     XCTAssert(cmd.sources.count == 1)
-    XCTAssert(cmd.sources[0].declarations.count == 4)
-    XCTAssert(cmd.sources[0].declarations(level: .internal).count == 4)
+    XCTAssert(cmd.sources[0].declarations(level: .public).count == 2)
     
-    cmd = try SwiftDocCoverage.run(alternativeRectFileURL.path, "--minimum-access-level", "fileprivate")
+    cmd = try SwiftDocCoverage.run(rectUrl.path, "--minimum-access-level", "internal")
     XCTAssert(cmd.sources.count == 1)
-    XCTAssert(cmd.sources[0].declarations.count == 4)
-    XCTAssert(cmd.sources[0].declarations(level: .fileprivate).count == 3)
+    XCTAssert(cmd.sources[0].declarations(level: .internal).count == 3)
+    
+    cmd = try SwiftDocCoverage.run(rectUrl.path, "--minimum-access-level", "fileprivate")
+    XCTAssert(cmd.sources.count == 1)
+    XCTAssert(cmd.sources[0].declarations(level: .fileprivate).count == 4)
 
-    cmd = try SwiftDocCoverage.run(alternativeRectFileURL.path, "--minimum-access-level", "private")
+    cmd = try SwiftDocCoverage.run(rectUrl.path, "--minimum-access-level", "private")
     XCTAssert(cmd.sources.count == 1)
-    XCTAssert(cmd.sources[0].declarations.count == 4)
-    XCTAssert(cmd.sources[0].declarations(level: .private).count == 4)
+    XCTAssert(cmd.sources[0].declarations(level: .private).count == 5)
+  }
+  
+  func test_ignore_filename_regex() throws {
+    let cmd = try SwiftDocCoverage.run(resourcesUrl.path, "--ignore-filename-regex", "Rect.swift")
+    XCTAssert(cmd.sources.count == 2)
+    
+    XCTAssert(cmd.sources[0].url?.lastPathComponent == "Size.swift")
+    XCTAssert(cmd.sources[0].declarations.count == 2)
+    
+    XCTAssert(cmd.sources[1].url?.lastPathComponent == "Point.swift")
+    XCTAssert(cmd.sources[1].declarations.count == 2)
   }
   
   func test_warnings() throws {
     let output = Output()
-    _ = try SwiftDocCoverage.run(output: output, rectFileURL.path, "--report", "warnings")
-    XCTAssert(output.buffer.contains("Rect.swift:9:3: warning: No documentation for 'var Rect.size'.") == true)
-    XCTAssert(output.buffer.contains("Rect.swift:12:3: warning: No documentation for 'var Rect.center'.") == true)
+    _ = try SwiftDocCoverage.run(output: output, rectUrl.path, "--report", "warnings")
+    XCTAssert(output.buffer.contains("Rect.swift:14:3: warning: No documentation for 'var Rect.center'.") == true)
   }
   
   func test_json() throws {
     let output = Output()
-    _ = try SwiftDocCoverage.run(output: output, rectFileURL.path, "--report", "json")
+    _ = try SwiftDocCoverage.run(output: output, rectUrl.path, "--report", "json")
     let sources = try JSONDecoder().decode([SwiftSource].self, from: output.buffer.data(using: .utf8)!)
     XCTAssert(sources.count == 1)
-    XCTAssert(sources[0].declarations.count == 4)
-  }
-  
-  func test_file() throws {
-    let cmd = try SwiftDocCoverage.run(rectFileURL.path)
-    XCTAssert(cmd.sources.count == 1)
-    XCTAssert(cmd.sources[0].declarations.count == 4)
+    XCTAssert(sources[0].declarations.count == 5)
   }
   
   func test_directory() throws {
-    let directoryURL = Bundle.module.url(forResource: "Resources", withExtension: nil, subdirectory: nil)!
+    let cmd = try SwiftDocCoverage.run(resourcesUrl.path)
     
-    let cmd = try SwiftDocCoverage.run(directoryURL.path)
-    
-    XCTAssert(cmd.sources.count == 5)
+    XCTAssert(cmd.sources.count == 3)
     
     XCTAssert(cmd.sources[0].url?.lastPathComponent == "Rect.swift")
-    XCTAssert(cmd.sources[0].declarations.count == 4)
+    XCTAssert(cmd.sources[0].declarations.count == 5)
     
-    XCTAssert(cmd.sources[1].url?.lastPathComponent == "CompactRect.swift")
-    XCTAssert(cmd.sources[1].declarations.count == 4)
+    XCTAssert(cmd.sources[1].url?.lastPathComponent == "Size.swift")
+    XCTAssert(cmd.sources[1].declarations.count == 2)
     
-    XCTAssert(cmd.sources[2].url?.lastPathComponent == "AlternativeRect.swift")
-    XCTAssert(cmd.sources[2].declarations.count == 4)
+    XCTAssert(cmd.sources[2].url?.lastPathComponent == "Point.swift")
+    XCTAssert(cmd.sources[2].declarations.count == 2)
+  }
+  
+  func test_skips_hidden_files_false() throws {
+    let cmd = try SwiftDocCoverage.run(resourcesUrl.path, "--skips-hidden-files", "false")
+    XCTAssert(cmd.sources.count == 4)
     
-    XCTAssert(cmd.sources[3].url?.lastPathComponent == "Size.swift")
+    XCTAssert(cmd.sources[0].url?.lastPathComponent == "AbsolutePosition.swift")
+    XCTAssert(cmd.sources[0].declarations.count == 6)
+    
+    XCTAssert(cmd.sources[1].url?.lastPathComponent == "Rect.swift")
+    XCTAssert(cmd.sources[1].declarations.count == 5)
+    
+    XCTAssert(cmd.sources[2].url?.lastPathComponent == "Size.swift")
+    XCTAssert(cmd.sources[2].declarations.count == 2)
+    
+    XCTAssert(cmd.sources[3].url?.lastPathComponent == "Point.swift")
     XCTAssert(cmd.sources[3].declarations.count == 2)
-    
-    XCTAssert(cmd.sources[4].url?.lastPathComponent == "Point.swift")
-    XCTAssert(cmd.sources[4].declarations.count == 2)
   }
   
   func test_output() throws {
     let output = Output()
-    _ = try SwiftDocCoverage.run(output: output, rectFileURL.path)
+    _ = try SwiftDocCoverage.run(output: output, rectUrl.path)
     XCTAssert(output.buffer.contains("Total: 50%"))
   }
   
@@ -546,14 +563,14 @@ final class SwiftDocCoverageTests: XCTestCase {
     let url = tempDir.appendingPathComponent("temp/report.txt")
     defer { try? FileManager.default.removeItem(at: tempDir) }
     
-    _ = try SwiftDocCoverage.run(rectFileURL.path, "--output", url.path)
+    _ = try SwiftDocCoverage.run(rectUrl.path, "--output", url.path)
     
     let text = try String(contentsOf: url)
     XCTAssert(text.contains("Total: 50%"))
   }
   
   func test_output_file_cant_open() {
-    XCTAssertThrowsError(try SwiftDocCoverage.run(rectFileURL.path, "--output", "/report.txt")) { error in
+    XCTAssertThrowsError(try SwiftDocCoverage.run(rectUrl.path, "--output", "/report.txt")) { error in
       XCTAssert(error.localizedDescription == Errors.cantOpenFile.rawValue)
     }
   }
@@ -591,47 +608,14 @@ extension Process {
 
 final class ToolProcessTests: XCTestCase {
   
-  func test_output() throws {
-//    let process = Process()
-//    let output = try process.run(executableURL, arguments: [fileURL.path])
-//    
-//    XCTAssert(process.terminationStatus == EXIT_SUCCESS)
-//    XCTAssert(output.contains("Total: 50%"))
-  }
+  lazy var executableURL: URL = { Bundle(for: Self.self).bundleURL.deletingLastPathComponent().appendingPathComponent("swift-doc-coverage") }()
   
-  func test_warninigs() throws {
-//    let process = Process()
-//    let output = try process.run(swiftDocCoverageURL, arguments: [fileURL.path, "--report", "warnings"])
-//    XCTAssert(process.terminationStatus == EXIT_SUCCESS)
-//    XCTAssert(output.contains("warning: No documentation for 'Rect.size'."))
-  }
-  
-  func test_json() throws {
-//    let process = Process()
-//    let output = try process.run(swiftDocCoverageURL, arguments: [fileURL.path, "--report", "json"])
-//    XCTAssert(process.terminationStatus == EXIT_SUCCESS)
-//    
-//    if let data = output.data(using: .utf8),
-//       let json = try JSONSerialization.jsonObject(with: data) as? [String : Any] {
-//      XCTAssert(json["sources"] != nil)
-//    }
-//    else {
-//      XCTFail()
-//    }
-  }
-  
-  func test_file_output() throws {
-//    let tempDirectory = createTempDirectory()
-//    let outputFileURL = tempDirectory.appendingPathComponent("report.txt")
-//    defer { try? FileManager.default.removeItem(at: tempDirectory) }
-//    
-//    let process = Process()
-//    let output = try process.run(executableURL, arguments: [fileURL.path, "--output", outputFileURL.path])
-//    XCTAssert(process.terminationStatus == EXIT_SUCCESS)
-//    XCTAssert(output.isEmpty)
-//    
-//    let text = try String(contentsOf: outputFileURL)
-//    XCTAssert(text.contains("Total: 50%"))
+  func test_process() throws {
+    let process = Process()
+    let output = try process.run(executableURL, arguments: [rectUrl.path])
+    
+    XCTAssert(process.terminationStatus == EXIT_SUCCESS)
+    XCTAssert(output.contains("Total: 50%"))
   }
 }
 

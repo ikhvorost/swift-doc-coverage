@@ -1,14 +1,16 @@
 import Foundation
 
 /// Doc line
-public struct Rect {
+open struct Rect {
+  fileprivate let index = 0
+  
   /** Doc block */
-  public var origin = Point()
+  private var origin = Point()
   
-  // Line
-  public var size = Size()
+  // Comment line
+  var size = Size()
   
-  /* Block */
+  /* Comment block */
   public var center: Point {
     get {
       let centerX = origin.x + (size.width / 2)

@@ -229,9 +229,7 @@ struct SwiftDocCoverage: ParsableCommand {
   }()
   
   static func string(from timeInterval: TimeInterval) -> String {
-    guard var time = dateFormatter.string(from: timeInterval) else {
-      return ""
-    }
+    var time = dateFormatter.string(from: timeInterval)!
     
     guard let fraction = String(format: "%.3f", timeInterval).split(separator: ".").last, fraction != "000" else {
       return time
