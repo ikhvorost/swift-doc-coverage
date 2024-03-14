@@ -25,8 +25,11 @@ import Foundation
 import SwiftSyntax
 
 
+/// Swift source
 public struct SwiftSource: Codable {
+  /// Source URL
   public let url: URL?
+  /// List of all parsed declarations
   public let declarations: [SwiftDeclaration]
   
   private init(url: URL?, source: String) {
@@ -34,17 +37,20 @@ public struct SwiftSource: Codable {
     let visitor = Visitor(source: source)
     self.declarations = visitor.declarations
   }
-    
+  
+  /// Create from a specified swift code.
   public init(source: String) {
     self.init(url: nil, source: source)
   }
   
-  public init(fileURL: URL) throws {
-    let source = try String(contentsOf: fileURL)
-    self.init(url: fileURL, source: source)
+  /// Create from a specified URL.
+  public init(url: URL) throws {
+    let source = try String(contentsOf: url)
+    self.init(url: url, source: source)
   }
   
-  public func declarations(level: SwiftAccessLevel) -> [SwiftDeclaration] {
-    declarations.filter { $0.accessLevel.rawValue <= level.rawValue }
+  /// List of declarations with a specified access level
+  public func declarations(accessLevel: SwiftAccessLevel) -> [SwiftDeclaration] {
+    declarations.filter { $0.accessLevel.rawValue <= accessLevel.rawValue }
   }
 }

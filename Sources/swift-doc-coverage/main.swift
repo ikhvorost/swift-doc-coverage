@@ -122,10 +122,10 @@ struct SwiftDocCoverage: ParsableCommand {
     sources = try urls.map { url in
       let sourceTime = Date()
       
-      let source = try SwiftSource(fileURL: url)
+      let source = try SwiftSource(url: url)
       
       if report != .json {
-        let declarations = source.declarations(level: minimumAccessLevel.accessLevel)
+        let declarations = source.declarations(accessLevel: minimumAccessLevel.accessLevel)
         if declarations.count > 0 {
           index += 1
           let filePath = url.absoluteString
@@ -142,12 +142,12 @@ struct SwiftDocCoverage: ParsableCommand {
     }
     
     if report == .coverage {
-      let declarations = sources.flatMap { $0.declarations(level: minimumAccessLevel.accessLevel) }
+      let declarations = sources.flatMap { $0.declarations(accessLevel: minimumAccessLevel.accessLevel) }
       guard declarations.count > 0 else {
         throw Errors.declarationsNotFound
       }
       
-      let undocumented = declarations.filter { $0.isDocumented == false }
+      let undocumented = declarations.filter { $0.hasDoc == false }
       
       let totalCount = declarations.count
       let documentedCount = totalCount - undocumented.count
@@ -246,7 +246,7 @@ struct SwiftDocCoverage: ParsableCommand {
   static func coverage(index: Int, time: Date, filePath: String, declarations: [SwiftDeclaration], out: Output?) {
     assert(declarations.count > 0)
     
-    let undocumented = declarations.filter { $0.isDocumented == false }
+    let undocumented = declarations.filter { $0.hasDoc == false }
     
     let totalCount = declarations.count
     let documentedCount = totalCount - undocumented.count
@@ -269,7 +269,7 @@ struct SwiftDocCoverage: ParsableCommand {
     assert(declarations.count > 0)
     
     declarations
-      .filter { $0.isDocumented == false }
+      .filter { $0.hasDoc == false }
       .forEach {
         out?.write("\(filePath):\($0.line):\($0.column): warning: No documentation for '\($0.name)'.")
       }

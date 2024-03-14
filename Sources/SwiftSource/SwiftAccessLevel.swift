@@ -23,12 +23,17 @@
 
 import SwiftSyntax
 
-
+/// Swift declaration access level.
 public enum SwiftAccessLevel: Int, Codable {
+  /// Classes and methods marked as open can be subclassed and overridden respectively out of their defining module.
   case `open`
+  /// Accessible from everywhere.
   case `public`
+  /// Accessible only within the defined module (default)
   case `internal`
+  /// Accessible only within the current swift file.
   case `fileprivate`
+  /// Accessible only within the defined class or struct.
   case `private`
   
  init(modifiers: DeclModifierListSyntax) {

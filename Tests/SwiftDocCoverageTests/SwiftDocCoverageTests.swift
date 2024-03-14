@@ -421,16 +421,31 @@ final class SourceCodeTests: XCTestCase {
     /// A documentation line comment
     /** A documentation 
     block comment */
-    
+    ///
+    /**     */
     mutating public func eat(_ food: Food, quantity: Int) throws -> Int { return 0 }
     """
     let source = SwiftSource(source: code)
     XCTAssert(source.declarations.count == 1)
-    XCTAssert(source.declarations[0].comments.count == 4)
-    XCTAssert(source.declarations[0].comments[0].text == "// A developer line comment")
-    XCTAssert(source.declarations[0].comments[1].text == "/* A developer block comment */")
-    XCTAssert(source.declarations[0].comments[2].text == "/// A documentation line comment")
-    XCTAssert(source.declarations[0].comments[3].text == "/** A documentation \nblock comment */")
+    XCTAssert(source.declarations[0].comments.count == 6)
+    
+    XCTAssert(source.declarations[0].comments[0].text == "A developer line comment")
+    XCTAssert(source.declarations[0].comments[0].isDoc == false)
+    
+    XCTAssert(source.declarations[0].comments[1].text == "A developer block comment")
+    XCTAssert(source.declarations[0].comments[1].isDoc == false)
+    
+    XCTAssert(source.declarations[0].comments[2].text == "A documentation line comment")
+    XCTAssert(source.declarations[0].comments[2].isDoc == true)
+    
+    XCTAssert(source.declarations[0].comments[3].text == "A documentation \nblock comment")
+    XCTAssert(source.declarations[0].comments[3].isDoc == true)
+    
+    XCTAssert(source.declarations[0].comments[4].text == "")
+    XCTAssert(source.declarations[0].comments[4].isDoc == false)
+    
+    XCTAssert(source.declarations[0].comments[5].text == "")
+    XCTAssert(source.declarations[0].comments[5].isDoc == false)
   }
 }
 
@@ -438,13 +453,13 @@ final class SourceFileTests: XCTestCase {
   
   func test_no_file() {
     let fileURL = resourcesUrl.appendingPathComponent("File.swift")
-    XCTAssertThrowsError(try SwiftSource(fileURL: fileURL)) { error in
+    XCTAssertThrowsError(try SwiftSource(url: fileURL)) { error in
       XCTAssert(error.localizedDescription == "The file “File.swift” couldn’t be opened because there is no such file.")
     }
   }
   
   func test_file() throws {
-    let source = try SwiftSource(fileURL: rectUrl)
+    let source = try SwiftSource(url: rectUrl)
     XCTAssert(source.declarations.count == 5)
   }
 }
@@ -488,23 +503,23 @@ final class SwiftDocCoverageTests: XCTestCase {
     var cmd = try SwiftDocCoverage.run(rectUrl.path, "--minimum-access-level", "open")
     XCTAssert(cmd.sources.count == 1)
     XCTAssert(cmd.sources[0].declarations.count == 5)
-    XCTAssert(cmd.sources[0].declarations(level: .open).count == 1)
+    XCTAssert(cmd.sources[0].declarations(accessLevel: .open).count == 1)
     
     cmd = try SwiftDocCoverage.run(rectUrl.path, "--minimum-access-level", "public")
     XCTAssert(cmd.sources.count == 1)
-    XCTAssert(cmd.sources[0].declarations(level: .public).count == 2)
+    XCTAssert(cmd.sources[0].declarations(accessLevel: .public).count == 2)
     
     cmd = try SwiftDocCoverage.run(rectUrl.path, "--minimum-access-level", "internal")
     XCTAssert(cmd.sources.count == 1)
-    XCTAssert(cmd.sources[0].declarations(level: .internal).count == 3)
+    XCTAssert(cmd.sources[0].declarations(accessLevel: .internal).count == 3)
     
     cmd = try SwiftDocCoverage.run(rectUrl.path, "--minimum-access-level", "fileprivate")
     XCTAssert(cmd.sources.count == 1)
-    XCTAssert(cmd.sources[0].declarations(level: .fileprivate).count == 4)
+    XCTAssert(cmd.sources[0].declarations(accessLevel: .fileprivate).count == 4)
 
     cmd = try SwiftDocCoverage.run(rectUrl.path, "--minimum-access-level", "private")
     XCTAssert(cmd.sources.count == 1)
-    XCTAssert(cmd.sources[0].declarations(level: .private).count == 5)
+    XCTAssert(cmd.sources[0].declarations(accessLevel: .private).count == 5)
   }
   
   func test_ignore_filename_regex() throws {

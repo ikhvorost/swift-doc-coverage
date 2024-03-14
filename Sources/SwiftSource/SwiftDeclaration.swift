@@ -47,15 +47,23 @@ fileprivate struct StringBuilder {
   }
 }
 
+/// Swift declaration.
 public struct SwiftDeclaration: Codable {
+  /// List of comments of this declaration.
   public let comments: [SwiftComment]
+  /// Access level of this declaration.
   public let accessLevel: SwiftAccessLevel
+  /// The keyword for this declaration.
   public var keyword: SwiftKeyword
+  /// The name of this declaration.
   public let name: String
+  /// The line in the file where this declaration resides.
   public let line: Int
+  /// The offset from the beginning of the line where this declaration resides.
   public let column: Int
   
-  public var isDocumented: Bool {
+  /// Whether or not this declaration has documentation.
+  public var hasDoc: Bool {
     comments.first { $0.isDoc } != nil
   }
 

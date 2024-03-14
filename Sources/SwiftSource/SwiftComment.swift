@@ -23,25 +23,41 @@
 
 import SwiftSyntax
 
-
+/// Swift declaration comment.
 public struct SwiftComment: Codable {
+  /// Text of this comment.
   public let text: String
+  /// Returns `true` if this comment is documentation (starting with '///' or '/**').
   public var isDoc: Bool
   
   init?(piece: TriviaPiece) {
     switch piece {
       case .lineComment(let value):
         text = value
+          .replacingOccurrences(of: "//", with: "")
+          .trimmingCharacters(in: .whitespaces)
         isDoc = false
+        
       case .blockComment(let value):
         text = value
+          .replacingOccurrences(of: "/*", with: "")
+          .replacingOccurrences(of: "*/", with: "")
+          .trimmingCharacters(in: .whitespaces)
         isDoc = false
+        
       case .docLineComment(let value):
         text = value
-        isDoc = true
+          .replacingOccurrences(of: "///", with: "")
+          .trimmingCharacters(in: .whitespaces)
+        isDoc = !text.isEmpty
+        
       case .docBlockComment(let value):
         text = value
-        isDoc = true
+          .replacingOccurrences(of: "/**", with: "")
+          .replacingOccurrences(of: "*/", with: "")
+          .trimmingCharacters(in: .whitespaces)
+        isDoc = !text.isEmpty
+        
       default:
         return nil
     }

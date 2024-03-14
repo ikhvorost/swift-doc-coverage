@@ -23,24 +23,41 @@
 
 import SwiftSyntax
 
-
+/// Swift declaration keyword.
 public enum SwiftKeyword: String, Codable {
+  /// `actor`
   case actor
+  /// `associatedtype`
   case `associatedtype`
+  /// Enum `case`
   case `case`
+  /// `class`
   case `class`
+  /// `enum`
   case `enum`
+  /// `extension`
   case `extension`
+  /// `func`
   case `func`
-  //case `import`
+  // case `import`
+  /// `init`
   case `init`
+  /// Const variable `let`
   case `let`
+  /// `macro`
   case macro
+  /// `operator`
   case `operator`
+  /// `precedencegroup`
   case `precedencegroup`
+  /// `protocol`
   case `protocol`
+  /// `struct`
   case `struct`
+  /// `subscript`
   case `subscript`
+  /// `typealias`
   case `typealias`
+  /// Variable `var`
   case `var`
 }
