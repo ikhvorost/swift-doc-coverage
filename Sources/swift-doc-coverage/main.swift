@@ -128,12 +128,11 @@ struct SwiftDocCoverage: ParsableCommand {
         let declarations = source.declarations(accessLevel: minimumAccessLevel.accessLevel)
         if declarations.count > 0 {
           index += 1
-          let filePath = url.absoluteString
           if report == .coverage {
-            Self.coverage(index: index, time: sourceTime, filePath: filePath, declarations: declarations, out: out)
+            Self.coverage(index: index, time: sourceTime, path: url.path, declarations: declarations, out: out)
           }
           else if report == .warnings {
-            Self.warnings(filePath: filePath, declarations: declarations, out: out)
+            Self.warnings(path: url.path, declarations: declarations, out: out)
           }
         }
       }
@@ -243,7 +242,7 @@ struct SwiftDocCoverage: ParsableCommand {
     return time
   }
   
-  static func coverage(index: Int, time: Date, filePath: String, declarations: [SwiftDeclaration], out: Output?) {
+  static func coverage(index: Int, time: Date, path: String, declarations: [SwiftDeclaration], out: Output?) {
     assert(declarations.count > 0)
     
     let undocumented = declarations.filter { $0.hasDoc == false }
@@ -252,10 +251,10 @@ struct SwiftDocCoverage: ParsableCommand {
     let documentedCount = totalCount - undocumented.count
     let coverage = documentedCount * 100 / totalCount
     
-    out?.write("\(index)) \(filePath): \(coverage)% [\(documentedCount)/\(totalCount)] (\(string(from: -time.timeIntervalSinceNow)))")
+    out?.write("\(index)) \(path): \(coverage)% [\(documentedCount)/\(totalCount)] (\(string(from: -time.timeIntervalSinceNow)))")
     
     if undocumented.count > 0 {
-      let fileName = NSString(string: filePath).lastPathComponent
+      let fileName = NSString(string: path).lastPathComponent
       
       out?.write("Undocumented:")
       undocumented.forEach {
@@ -265,13 +264,13 @@ struct SwiftDocCoverage: ParsableCommand {
     }
   }
   
-  static func warnings(filePath: String, declarations: [SwiftDeclaration], out: Output?) {
+  static func warnings(path: String, declarations: [SwiftDeclaration], out: Output?) {
     assert(declarations.count > 0)
     
     declarations
       .filter { $0.hasDoc == false }
       .forEach {
-        out?.write("\(filePath):\($0.line):\($0.column): warning: No documentation for '\($0.name)'.")
+        out?.write("\(path):\($0.line):\($0.column): warning: No documentation for '\($0.name)'.")
       }
   }
 }
