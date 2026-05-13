@@ -61,10 +61,12 @@ enum ReportArgument: String, ExpressibleByArgument {
 
 struct SwiftDocCoverage: ParsableCommand {
   
-  static var configuration = CommandConfiguration(
-    abstract: "Generates documentation coverage statistics for Swift files.",
-    version: "1.1.0"
-  )
+  static var configuration: CommandConfiguration {
+    CommandConfiguration(
+      abstract: "Generates documentation coverage statistics for Swift files.",
+      version: "1.1.0"
+    )
+  }
   
   @Argument(help: "One or more paths to directories or Swift files.")
   var inputs: [String]
@@ -219,7 +221,7 @@ struct SwiftDocCoverage: ParsableCommand {
     return [url]
   }
   
-  static var dateFormatter: DateComponentsFormatter = {
+  static let dateFormatter: DateComponentsFormatter = {
     let formatter = DateComponentsFormatter()
     formatter.unitsStyle = .abbreviated
     formatter.allowedUnits = [.hour, .minute, .second]

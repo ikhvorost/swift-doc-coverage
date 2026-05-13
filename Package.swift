@@ -1,4 +1,4 @@
-// swift-tools-version: 5.7
+// swift-tools-version: 6.0
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -6,19 +6,15 @@ import PackageDescription
 let package = Package(
   name: "swift-doc-coverage",
   platforms: [
-    .iOS(.v13),
-    .macOS(.v10_15),
-    .tvOS(.v13),
-    //.visionOS(.v1)
-    .watchOS(.v6)
+    .macOS(.v10_15)
   ],
   products: [
     .library(name: "SwiftSource", targets: ["SwiftSource"]),
     .executable(name: "swift-doc-coverage", targets: ["swift-doc-coverage"])
   ],
   dependencies: [
-    .package(url: "https://github.com/apple/swift-syntax.git", from: "509.1.1"),
-    .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.3.0")
+    .package(url: "https://github.com/apple/swift-syntax.git", from: "603.0.1"),
+    .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.7.1")
   ],
   targets: [
     .target(
@@ -43,5 +39,5 @@ let package = Package(
       ]
     )
   ],
-  swiftLanguageVersions: [.v5]
+  swiftLanguageModes: [.v6]
 )
